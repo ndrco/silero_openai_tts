@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     silero_sample_rate: int = 48000
 
     silero_device: DeviceMode = "auto"
-    silero_default_speaker: str = "baya"
+    silero_default_speaker: str = "kseniya"
     silero_num_threads: int = 4  # 0 = не менять; иначе torch.set_num_threads(N)
     silero_max_chars_per_chunk: int = 500  # макс. символов в чанке для длинного текста
     silero_pause_between_fragments_sec: float = 0.3  # пауза между чанками/сегментами (сек)
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     silero_en_language: str = "en"
     silero_en_model_id: str = "v3_en"
     silero_en_sample_rate: int = 48000
-    silero_en_default_speaker: str = "en_0"
+    silero_en_default_speaker: str = "en_21"
 
     class Config:
         env_file = ".env"
