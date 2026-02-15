@@ -1,0 +1,29 @@
+[project]
+name = "silero-openai-tts"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "pydantic>=2.5",
+  "pydantic-settings>=2.1",
+  "numpy>=1.23",
+  "soundfile>=0.12",
+  "num2words>=0.5",
+  "pymorphy3>=2.0",
+  "omegaconf>=2.0",
+  "torch>=2.0",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=7.0",
+  "httpx>=0.27",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uvicorn]
+factory = false
