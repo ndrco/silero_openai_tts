@@ -1,5 +1,8 @@
 import io
 import logging
+import os
+from pathlib import Path
+
 import numpy as np
 import soundfile as sf
 
@@ -7,7 +10,7 @@ log = logging.getLogger("silero")
 
 
 class SileroTTSEngine:
-    def __init__(self, language: str, model_id: str, device: str, sample_rate: int, default_speaker: str, num_threads: int = 0, max_chars_per_chunk: int = 500, chunk_pause_sec: float = 0.0):
+    def __init__(self, language: str, model_id: str, device: str, sample_rate: int, default_speaker: str, num_threads: int = 0, max_chars_per_chunk: int = 500, chunk_pause_sec: float = 0.0, models_dir: str = "models"):
         self.language = language
         self.model_id = model_id
         self.device_mode = (device or "auto").lower()  # auto|cpu|cuda
@@ -16,6 +19,7 @@ class SileroTTSEngine:
         self.num_threads = int(num_threads)
         self.max_chars_per_chunk = max(1, int(max_chars_per_chunk))
         self.chunk_pause_sec = max(0.0, float(chunk_pause_sec))
+        self.models_dir = Path(models_dir).expanduser()
 
         self._torch = None
         self.device = None
@@ -65,6 +69,11 @@ class SileroTTSEngine:
 
         log.info("Loading Silero model: language=%s speaker_model=%s sample_rate=%s",
                  self.language, self.model_id, self.sample_rate)
+
+        self.models_dir.mkdir(parents=True, exist_ok=True)
+        os.environ["TORCH_HOME"] = str(self.models_dir.resolve())
+
+        log.info("Silero model cache directory: %s", self.models_dir.resolve())
 
         # Один вызов hub.load: репо может вернуть 5 (новый API) или 2 (старый API)
         result = torch.hub.load(
