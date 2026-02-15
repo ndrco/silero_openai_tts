@@ -21,8 +21,8 @@ MODEL = os.environ.get("TTS_MODEL", "gpt-4o-mini-tts")
 VOICE = os.environ.get("TTS_VOICE", "alloy")
 SPEED = float(os.environ.get("TTS_SPEED", "1.0"))
 
-# Длинный текст: много предложений + числа + проценты + рубли + разные формы.
-# Цель: проверить, что сервис не "обрезает хвост", и что нормализация чисел работает.
+# Long text: many sentences + numbers + percentages + rubles + different forms.
+# Goal: verify that the service does not "cut off the tail" and that number normalization works.
 LONG_TEXT = (
     "Hello World! Проверка длинной озвучки. Сейчас я специально произнесу длинный абзац, "
     "чтобы убедиться, что звук не обрезается в конце и что сервер корректно "
@@ -80,7 +80,7 @@ def ffprobe_duration_seconds(path: Path) -> float | None:
     if not ffprobe:
         return None
     try:
-        # Выводим duration в секундах
+        # Output duration in seconds
         cmd = [
             ffprobe, "-v", "error",
             "-show_entries", "format=duration",
@@ -132,7 +132,7 @@ def main() -> int:
         print("mp3 duration_sec: (ffprobe not found or parse failed)")
         print("Tip: install ffmpeg to get ffprobe, e.g. sudo apt-get install -y ffmpeg")
 
-    # Простая эвристика "обрезки": если mp3 длительность сильно меньше wav (или сильно меньше ожидаемой)
+    # Simple truncation heuristic: if MP3 duration is much smaller than WAV (or than expected)
     if dur_wav is not None and dur_mp3 is not None:
         ratio = dur_mp3 / dur_wav if dur_wav > 0 else 0
         print("duration ratio mp3/wav:", f"{ratio:.3f}")

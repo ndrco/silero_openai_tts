@@ -32,7 +32,7 @@ def _synthesize_with_routing(request: Request, text: str, speaker: str) -> bytes
     en_normalizer = request.app.state.en_normalizer
     lang_router = request.app.state.language_router
 
-    # Сначала подменяем URL на «ссылка», чтобы фраза «Ссылка на GitHub: https://...» стала одним сегментом «Ссылка на ссылка»
+    # First replace URL with "link" so a phrase like "Link to GitHub: https://..." remains one segment as "Link to link"
     text = replace_urls(text)
     segments = lang_router.split(text)
     if not segments:

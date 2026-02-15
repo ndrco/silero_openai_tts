@@ -59,7 +59,7 @@ class SileroTTSEngine:
             torch.set_num_threads(self.num_threads)
             log.info("Silero torch.set_num_threads(%s)", self.num_threads)
 
-        # Логи про устройство
+        # Device logs
         if self.device.type == "cuda":
             gpu_name = torch.cuda.get_device_name(0)
             log.info("Silero device: CUDA (%s)", gpu_name)
@@ -75,7 +75,7 @@ class SileroTTSEngine:
 
         log.info("Silero model cache directory: %s", self.models_dir.resolve())
 
-        # Один вызов hub.load: репо может вернуть 5 (новый API) или 2 (старый API)
+        # One hub.load call: repo may return 5 values (new API) or 2 (old API)
         result = torch.hub.load(
             repo_or_dir="snakers4/silero-models",
             model="silero_tts",
@@ -84,8 +84,8 @@ class SileroTTSEngine:
         )
         if len(result) == 5:
             model, symbols, _sr, _example_text, apply_tts = result
-            # Некоторые реализации `.to()` у torch hub моделей работают in-place
-            # и могут вернуть None. Поэтому не полагаемся на возвращаемое значение.
+            # Some torch hub model `.to()` implementations work in-place
+            # and may return None, so we do not rely on the return value.
             model.to(self.device)
             self._model = model
             self._symbols = symbols
@@ -101,7 +101,7 @@ class SileroTTSEngine:
 
     @staticmethod
     def _split_long_text(text: str, max_chars: int) -> list[str]:
-        """Разбивает длинный текст на чанки не длиннее max_chars, по границам предложений или слов."""
+        """Splits long text into chunks no longer than max_chars, by sentence or word boundaries."""
         text = (text or "").strip()
         if not text or len(text) <= max_chars:
             return [text] if text else []
@@ -111,7 +111,7 @@ class SileroTTSEngine:
             if len(text) <= max_chars:
                 chunks.append(text.strip())
                 break
-            # Ищем границу только в пределах первых max_chars (не max_chars+1), чтобы чанк не превышал лимит
+            # Search boundary only within first max_chars (not max_chars+1) so chunk does not exceed the limit
             piece = text[:max_chars]
             last_sent = max(
                 piece.rfind("."), piece.rfind("!"), piece.rfind("?"), piece.rfind("\n")
@@ -128,7 +128,7 @@ class SileroTTSEngine:
                     chunk = text[:max_chars].strip()
                     text = text[max_chars:].lstrip()
             if chunk:
-                # На случай краёв: не передаём чанк длиннее лимита
+                # Edge-case safeguard: do not pass chunks longer than the limit
                 if len(chunk) > max_chars:
                     chunk = chunk[:max_chars].rstrip()
                 if chunk:
@@ -136,7 +136,7 @@ class SileroTTSEngine:
         return chunks
 
     def _synthesize_chunk(self, text: str, speaker: str) -> np.ndarray:
-        """Синтез одного фрагмента текста, возвращает float32 моно-массив."""
+        """Synthesizes one text fragment and returns a float32 mono array."""
         torch = self._torch
         with torch.inference_mode():
             if self._apply_tts is not None:
@@ -167,7 +167,7 @@ class SileroTTSEngine:
         spk = speaker or self.default_speaker
         chunks = self._split_long_text(text, self.max_chars_per_chunk)
         if not chunks:
-            # Пустой текст — минимальная тишина
+            # Empty text -> minimal silence
             chunks = [" "]
 
         if len(chunks) > 1:

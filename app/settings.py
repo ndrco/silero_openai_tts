@@ -13,10 +13,10 @@ class Settings(BaseSettings):
 
     silero_device: DeviceMode = "auto"
     silero_default_speaker: str = "kseniya"
-    silero_num_threads: int = 4  # 0 = не менять; иначе torch.set_num_threads(N)
-    silero_max_chars_per_chunk: int = 500  # макс. символов в чанке для длинного текста
-    silero_pause_between_fragments_sec: float = 0.3  # пауза между чанками/сегментами (сек)
-    silero_models_dir: str = "models"  # постоянный каталог для кэша/моделей Silero (torch.hub)
+    silero_num_threads: int = 4  # 0 = do not change; otherwise torch.set_num_threads(N)
+    silero_max_chars_per_chunk: int = 500  # max chars per chunk for long text
+    silero_pause_between_fragments_sec: float = 0.3  # pause between chunks/segments (sec)
+    silero_models_dir: str = "models"  # persistent directory for Silero cache/models (torch.hub)
 
     require_auth: bool = False
     api_key: str = "dummy-local-key"
@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     ffmpeg_bin: str = "ffmpeg"
 
-    transliterate_latin: bool = True  # латиница → кириллица для озвучки английских слов
+    transliterate_latin: bool = True  # Latin → Cyrillic transliteration for pronouncing English words
 
     language_aware_routing: bool = True
 
