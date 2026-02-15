@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     silero_default_speaker: str = "baya"
     silero_num_threads: int = 4  # 0 = не менять; иначе torch.set_num_threads(N)
     silero_max_chars_per_chunk: int = 500  # макс. символов в чанке для длинного текста
+    silero_pause_between_fragments_sec: float = 0.3  # пауза между чанками/сегментами (сек)
 
     require_auth: bool = False
     api_key: str = "dummy-local-key"
@@ -26,7 +27,7 @@ class Settings(BaseSettings):
 
     transliterate_latin: bool = True  # латиница → кириллица для озвучки английских слов
 
-    language_aware_routing: bool = False
+    language_aware_routing: bool = True
 
     silero_en_enabled: bool = True
     silero_en_language: str = "en"

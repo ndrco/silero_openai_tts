@@ -1,13 +1,16 @@
+import logging
 import hashlib
 from io import BytesIO
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import StreamingResponse
 from app.api.schemas import SpeechRequest
+from app.text.normalize import replace_urls
 from app.tts.voices import map_voice_to_silero
 from app.audio.concat import concat_wav_bytes
 from app.audio.encode import encode_audio, media_type_for
 
 router = APIRouter()
+log = logging.getLogger("silero")
 
 
 def _check_auth(req: Request):
@@ -29,6 +32,8 @@ def _synthesize_with_routing(request: Request, text: str, speaker: str) -> bytes
     en_normalizer = request.app.state.en_normalizer
     lang_router = request.app.state.language_router
 
+    # Сначала подменяем URL на «ссылка», чтобы фраза «Ссылка на GitHub: https://...» стала одним сегментом «Ссылка на ссылка»
+    text = replace_urls(text)
     segments = lang_router.split(text)
     if not segments:
         return ru_engine.synthesize_wav_bytes(" ", speaker=speaker)
@@ -37,12 +42,20 @@ def _synthesize_with_routing(request: Request, text: str, speaker: str) -> bytes
     for segment in segments:
         if segment.lang == "en" and en_engine is not None:
             normalized = en_normalizer.run(segment.text)
-            wav_parts.append(en_engine.synthesize_wav_bytes(normalized, speaker=en_engine.default_speaker))
+            if not normalized or not normalized.strip():
+                normalized = " "
+            try:
+                wav_parts.append(en_engine.synthesize_wav_bytes(normalized, speaker=en_engine.default_speaker))
+            except (ValueError, RuntimeError) as e:
+                log.warning("EN model rejected segment, fallback to RU: %s", e)
+                normalized_ru = ru_normalizer.run(segment.text)
+                wav_parts.append(ru_engine.synthesize_wav_bytes(normalized_ru, speaker=speaker))
         else:
             normalized = ru_normalizer.run(segment.text)
             wav_parts.append(ru_engine.synthesize_wav_bytes(normalized, speaker=speaker))
 
-    return concat_wav_bytes(wav_parts, expected_sample_rate=ru_engine.sample_rate)
+    pause_sec = getattr(request.app.state.settings, "silero_pause_between_fragments_sec", 0.3)
+    return concat_wav_bytes(wav_parts, expected_sample_rate=ru_engine.sample_rate, pause_sec=pause_sec)
 
 
 @router.post("/v1/audio/speech")

@@ -36,6 +36,8 @@ LONG_TEXT = (
     "Ещё один кусок текста для надёжности. "
     "В конце я добавлю контрольную строку: КОНТРОЛЬНАЯ ФРАЗА В САМОМ КОНЦЕ, НЕ ДОЛЖНА ПРОПАСТЬ."
     "Ссылка на GitHub: https://github.com/ndrco/silero_openai_tts"
+    "This is a test of long audio #1. I will intentionally read a long paragraph!"
+
 )
 
 def post_tts(response_format: str, text: str) -> requests.Response:

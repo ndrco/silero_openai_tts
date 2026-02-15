@@ -7,7 +7,7 @@ log = logging.getLogger("silero")
 
 
 class SileroTTSEngine:
-    def __init__(self, language: str, model_id: str, device: str, sample_rate: int, default_speaker: str, num_threads: int = 0, max_chars_per_chunk: int = 500):
+    def __init__(self, language: str, model_id: str, device: str, sample_rate: int, default_speaker: str, num_threads: int = 0, max_chars_per_chunk: int = 500, chunk_pause_sec: float = 0.0):
         self.language = language
         self.model_id = model_id
         self.device_mode = (device or "auto").lower()  # auto|cpu|cuda
@@ -15,6 +15,7 @@ class SileroTTSEngine:
         self.default_speaker = default_speaker
         self.num_threads = int(num_threads)
         self.max_chars_per_chunk = max(1, int(max_chars_per_chunk))
+        self.chunk_pause_sec = max(0.0, float(chunk_pause_sec))
 
         self._torch = None
         self.device = None
@@ -164,7 +165,16 @@ class SileroTTSEngine:
             log.debug("Silero long text split into %s chunks", len(chunks))
 
         parts = [self._synthesize_chunk(chunk, spk) for chunk in chunks]
-        audio_np = np.concatenate(parts, axis=0)
+        if len(parts) > 1 and self.chunk_pause_sec > 0:
+            silence = np.zeros(int(self.sample_rate * self.chunk_pause_sec), dtype=np.float32)
+            audio_parts = []
+            for i, p in enumerate(parts):
+                audio_parts.append(p)
+                if i < len(parts) - 1:
+                    audio_parts.append(silence)
+            audio_np = np.concatenate(audio_parts, axis=0)
+        else:
+            audio_np = np.concatenate(parts, axis=0)
 
         buf = io.BytesIO()
         sf.write(buf, audio_np, self.sample_rate, format="WAV", subtype="PCM_16")

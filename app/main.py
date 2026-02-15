@@ -34,6 +34,7 @@ def create_app() -> FastAPI:
         default_speaker=settings.silero_default_speaker,
         num_threads=settings.silero_num_threads,
         max_chars_per_chunk=settings.silero_max_chars_per_chunk,
+        chunk_pause_sec=settings.silero_pause_between_fragments_sec,
     )
 
     en_engine = None
@@ -46,13 +47,14 @@ def create_app() -> FastAPI:
             default_speaker=settings.silero_en_default_speaker,
             num_threads=settings.silero_num_threads,
             max_chars_per_chunk=settings.silero_max_chars_per_chunk,
+            chunk_pause_sec=settings.silero_pause_between_fragments_sec,
         )
 
     if settings.language_aware_routing:
         # В language-aware режиме транслитерацию отключаем,
         # чтобы EN-сегменты не превращались в кириллицу.
         ru_normalizer = TextNormalizer(transliterate_latin=False)
-        en_normalizer = TextNormalizer(transliterate_latin=False, expand_numeric=False)
+        en_normalizer = TextNormalizer(transliterate_latin=False, expand_numeric=True, expand_numeric_lang="en")
         lang_router = LanguageAwareRouter()
     else:
         ru_normalizer = TextNormalizer(transliterate_latin=settings.transliterate_latin)
@@ -68,6 +70,15 @@ def create_app() -> FastAPI:
     app.state.en_normalizer = en_normalizer
     app.state.language_router = lang_router
     app.state.cache = cache
+
+    @app.on_event("shutdown")
+    def _shutdown():
+        cache_dir = app.state.settings.cache_dir
+        try:
+            shutil.rmtree(cache_dir)
+            logging.getLogger("silero").info("Cache cleared: %s", cache_dir)
+        except OSError as e:
+            logging.getLogger("silero").warning("Could not remove cache dir %s: %s", cache_dir, e)
 
     # Загружаем модель(и) сразу при создании app, чтобы не зависеть от порядка startup
     ru_engine.load()

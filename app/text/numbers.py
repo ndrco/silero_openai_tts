@@ -40,3 +40,27 @@ def expand_numbers(text: str) -> str:
 
     text = STANDALONE_INT_RE.sub(repl_standalone, text)
     return text
+
+
+# Английский: отдельные числа и #N
+HASH_NUM_RE = re.compile(r"#(\d{1,18})\b")
+
+
+def _num_to_words_en(n: int) -> str:
+    return num2words(n, lang="en").replace("-", " ")
+
+
+def expand_numbers_en(text: str) -> str:
+    """Расширяет числа в английском тексте: 1 → one, #1 → number one."""
+    def repl_hash(m: re.Match) -> str:
+        n = int(m.group(1))
+        return f"number {_num_to_words_en(n)}"
+
+    text = HASH_NUM_RE.sub(repl_hash, text)
+
+    def repl_standalone_en(m: re.Match) -> str:
+        n = int(m.group(1))
+        return _num_to_words_en(n)
+
+    text = STANDALONE_INT_RE.sub(repl_standalone_en, text)
+    return text
