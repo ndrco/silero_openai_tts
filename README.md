@@ -17,7 +17,7 @@ normalization pipeline focused on **Russian and English**, including **numeral e
 - **OpenAI API compatible**: implements `POST /v1/audio/speech` with familiar request fields:
   `model`, `input`, `voice`, `response_format`, `speed`.
 - **Designed for OpenClaw**, but works with any OpenAI-compatible client.
-- **Russian + English support** (switchable via config).
+- **Russian + English support** (automatic recognition).
 - **Reads numerals naturally**:
   - expands integers into words;
   - for Russian, adjusts noun forms to agree with numbers (e.g. “21 рубль / 22 рубля / 25 рублей”);
