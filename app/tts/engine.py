@@ -67,13 +67,17 @@ class SileroTTSEngine:
         )
         if len(result) == 5:
             model, symbols, _sr, _example_text, apply_tts = result
-            self._model = model.to(self.device)
+            # Некоторые реализации `.to()` у torch hub моделей работают in-place
+            # и могут вернуть None. Поэтому не полагаемся на возвращаемое значение.
+            model.to(self.device)
+            self._model = model
             self._symbols = symbols
             self._apply_tts = apply_tts
             log.info("Silero loaded (apply_tts API).")
         else:
             model, _ = result
-            self._model = model.to(self.device)
+            model.to(self.device)
+            self._model = model
             self._apply_tts = None
             self._symbols = None
             log.info("Silero loaded (model.apply_tts API).")
