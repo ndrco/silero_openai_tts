@@ -35,7 +35,7 @@ def encode_audio(wav_bytes: bytes, out_format: AudioFormat, ffmpeg_bin: str, spe
     afilter = _atempo_chain(speed) if abs(speed - 1.0) > 1e-6 else None
 
     if out_format == "wav":
-        # wav с изменением скорости через ffmpeg
+        # WAV with speed adjustment via ffmpeg
         args = [ffmpeg_bin, "-hide_banner", "-loglevel", "error", "-i", "pipe:0"]
         if afilter:
             args += ["-filter:a", afilter]

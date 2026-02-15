@@ -53,8 +53,8 @@ def create_app() -> FastAPI:
         )
 
     if settings.language_aware_routing:
-        # В language-aware режиме транслитерацию отключаем,
-        # чтобы EN-сегменты не превращались в кириллицу.
+        # In language-aware mode, transliteration is disabled,
+        # so EN segments are not converted into Cyrillic.
         ru_normalizer = TextNormalizer(transliterate_latin=False)
         en_normalizer = TextNormalizer(transliterate_latin=False, expand_numeric=True, expand_numeric_lang="en")
         lang_router = LanguageAwareRouter()
@@ -82,7 +82,7 @@ def create_app() -> FastAPI:
         except OSError as e:
             logging.getLogger("silero").warning("Could not remove cache dir %s: %s", cache_dir, e)
 
-    # Загружаем модель(и) сразу при создании app, чтобы не зависеть от порядка startup
+    # Load model(s) immediately on app creation to avoid dependency on startup order
     ru_engine.load()
     if en_engine is not None:
         en_engine.load()

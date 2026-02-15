@@ -42,7 +42,7 @@ def expand_numbers(text: str) -> str:
     return text
 
 
-# Английский: отдельные числа и #N
+# English: standalone numbers and #N
 HASH_NUM_RE = re.compile(r"#(\d{1,18})\b")
 
 
@@ -51,7 +51,7 @@ def _num_to_words_en(n: int) -> str:
 
 
 def expand_numbers_en(text: str) -> str:
-    """Расширяет числа в английском тексте: 1 → one, #1 → number one."""
+    """Expands numbers in English text: 1 → one, #1 → number one."""
     def repl_hash(m: re.Match) -> str:
         n = int(m.group(1))
         return f"number {_num_to_words_en(n)}"

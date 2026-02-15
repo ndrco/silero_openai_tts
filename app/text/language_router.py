@@ -13,7 +13,7 @@ class TextSegment:
 
 
 class LanguageAwareRouter:
-    """Детектирует язык текста и разбивает смешанный текст на языковые сегменты."""
+    """Detects text language and splits mixed text into language segments."""
 
     @staticmethod
     def detect_token_language(token: str) -> str | None:

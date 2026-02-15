@@ -1,4 +1,4 @@
-"""Тесты транслитерации латиницы → кириллица."""
+"""Tests for Latin-to-Cyrillic transliteration."""
 import pytest
 from app.text.transliterate import transliterate_latin_to_cyrillic
 

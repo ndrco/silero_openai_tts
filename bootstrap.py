@@ -55,7 +55,7 @@ pip install -U pip
 pip install -e .
 
 ### run
-# лучше создай .env на базе .env.example
+# Better create .env based on .env.example
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 ### test
@@ -450,7 +450,7 @@ def encode_audio(wav_bytes: bytes, out_format: AudioFormat, ffmpeg_bin: str, spe
     afilter = _atempo_chain(speed) if abs(speed - 1.0) > 1e-6 else None
 
     if out_format == "wav":
-        # wav с изменением скорости через ffmpeg
+        # WAV with speed adjustment via ffmpeg
         args = [ffmpeg_bin, "-hide_banner", "-loglevel", "error", "-i", "pipe:0"]
         if afilter:
             args += ["-filter:a", afilter]
@@ -495,7 +495,7 @@ def ensure_parents(path: Path) -> None:
 def write_file(path: Path, content: str) -> None:
     ensure_parents(path)
     if path.exists():
-        # не перезатираем существующее без твоего решения
+        # Do not overwrite existing files without your decision
         return
     path.write_text(content, encoding="utf-8")
 

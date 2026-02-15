@@ -3,7 +3,7 @@ import re
 from app.text.numbers import expand_numbers, expand_numbers_en
 from app.text.transliterate import transliterate_latin_to_cyrillic
 
-# URL заменяем на слово «ссылка»; подпись перед URL (GitHub: и т.п.) оставляем для озвучки
+# Replace URLs with the word "link"; keep any label before URL (GitHub:, etc.) for TTS
 URL_RE = re.compile(
     r"https?://[^\s<>\[\]()]+|www\.[^\s<>\[\]()]+",
     re.IGNORECASE,
@@ -11,7 +11,7 @@ URL_RE = re.compile(
 
 
 def replace_urls(text: str) -> str:
-    """Заменяет только URL в тексте на слово «ссылка» для озвучки. Подпись (например GitHub:) остаётся."""
+    """Replaces only URLs in text with the word "link" for TTS. Labels (e.g., GitHub:) stay intact."""
     return URL_RE.sub(" ссылка ", text)
 
 
