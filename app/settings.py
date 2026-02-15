@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     silero_num_threads: int = 4  # 0 = не менять; иначе torch.set_num_threads(N)
     silero_max_chars_per_chunk: int = 500  # макс. символов в чанке для длинного текста
     silero_pause_between_fragments_sec: float = 0.3  # пауза между чанками/сегментами (сек)
+    silero_models_dir: str = "models"  # постоянный каталог для кэша/моделей Silero (torch.hub)
 
     require_auth: bool = False
     api_key: str = "dummy-local-key"
