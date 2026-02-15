@@ -7,13 +7,13 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
     
-    silero_language: str = "ru"
-    silero_model_id: str = "v4_ru"
+    silero_language: str = "multi"
+    silero_model_id: str = "multi_v2"
     silero_sample_rate: int = 48000
 
-    # было: "cpu"
     silero_device: DeviceMode = "auto"
     silero_default_speaker: str = "baya"
+    silero_num_threads: int = 4  # 0 = не менять; иначе torch.set_num_threads(N)
 
     require_auth: bool = False
     api_key: str = "dummy-local-key"

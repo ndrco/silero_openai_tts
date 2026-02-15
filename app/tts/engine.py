@@ -6,12 +6,13 @@ import soundfile as sf
 log = logging.getLogger("silero")
 
 class SileroTTSEngine:
-    def __init__(self, language: str, model_id: str, device: str, sample_rate: int, default_speaker: str):
+    def __init__(self, language: str, model_id: str, device: str, sample_rate: int, default_speaker: str, num_threads: int = 0):
         self.language = language
         self.model_id = model_id
         self.device_mode = (device or "auto").lower()  # auto|cpu|cuda
         self.sample_rate = int(sample_rate)
         self.default_speaker = default_speaker
+        self.num_threads = int(num_threads)
 
         self._torch = None
         self.device = None
@@ -46,6 +47,10 @@ class SileroTTSEngine:
 
         self._torch = torch
         self.device = self._resolve_device()
+
+        if self.num_threads > 0:
+            torch.set_num_threads(self.num_threads)
+            log.info("Silero torch.set_num_threads(%s)", self.num_threads)
 
         # Логи про устройство
         if self.device.type == "cuda":

@@ -76,6 +76,7 @@ class Settings(BaseSettings):
     silero_model_id: str = "v4_ru"
     silero_sample_rate: int = 48000
     silero_device: str = "cpu"
+    silero_num_threads: int = 0
     silero_default_speaker: str = "baya"
 
     require_auth: bool = False
@@ -109,6 +110,7 @@ def create_app() -> FastAPI:
         device=settings.silero_device,
         sample_rate=settings.silero_sample_rate,
         default_speaker=settings.silero_default_speaker,
+        num_threads=settings.silero_num_threads,
     )
     normalizer = TextNormalizer()
     cache = DiskCache(settings.cache_dir, max_files=settings.cache_max_files)

@@ -30,6 +30,7 @@ def create_app() -> FastAPI:
         device=settings.silero_device,
         sample_rate=settings.silero_sample_rate,
         default_speaker=settings.silero_default_speaker,
+        num_threads=settings.silero_num_threads,
     )
     normalizer = TextNormalizer()
     cache = DiskCache(settings.cache_dir, max_files=settings.cache_max_files)
