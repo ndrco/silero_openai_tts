@@ -5,14 +5,16 @@ import soundfile as sf
 
 log = logging.getLogger("silero")
 
+
 class SileroTTSEngine:
-    def __init__(self, language: str, model_id: str, device: str, sample_rate: int, default_speaker: str, num_threads: int = 0):
+    def __init__(self, language: str, model_id: str, device: str, sample_rate: int, default_speaker: str, num_threads: int = 0, max_chars_per_chunk: int = 500):
         self.language = language
         self.model_id = model_id
         self.device_mode = (device or "auto").lower()  # auto|cpu|cuda
         self.sample_rate = int(sample_rate)
         self.default_speaker = default_speaker
         self.num_threads = int(num_threads)
+        self.max_chars_per_chunk = max(1, int(max_chars_per_chunk))
 
         self._torch = None
         self.device = None
@@ -87,13 +89,45 @@ class SileroTTSEngine:
             self._symbols = None
             log.info("Silero loaded (model.apply_tts API).")
 
-    def synthesize_wav_bytes(self, text: str, speaker: str | None = None) -> bytes:
-        if self._model is None or self._torch is None:
-            raise RuntimeError("Silero model is not loaded")
+    @staticmethod
+    def _split_long_text(text: str, max_chars: int) -> list[str]:
+        """Разбивает длинный текст на чанки не длиннее max_chars, по границам предложений или слов."""
+        text = (text or "").strip()
+        if not text or len(text) <= max_chars:
+            return [text] if text else []
 
+        chunks = []
+        while text:
+            if len(text) <= max_chars:
+                chunks.append(text.strip())
+                break
+            # Ищем границу только в пределах первых max_chars (не max_chars+1), чтобы чанк не превышал лимит
+            piece = text[:max_chars]
+            last_sent = max(
+                piece.rfind("."), piece.rfind("!"), piece.rfind("?"), piece.rfind("\n")
+            )
+            if last_sent >= 0:
+                chunk = text[: last_sent + 1].strip()
+                text = text[last_sent + 1 :].lstrip()
+            else:
+                last_space = piece.rfind(" ")
+                if last_space >= 0:
+                    chunk = text[: last_space + 1].strip()
+                    text = text[last_space + 1 :].lstrip()
+                else:
+                    chunk = text[:max_chars].strip()
+                    text = text[max_chars:].lstrip()
+            if chunk:
+                # На случай краёв: не передаём чанк длиннее лимита
+                if len(chunk) > max_chars:
+                    chunk = chunk[:max_chars].rstrip()
+                if chunk:
+                    chunks.append(chunk)
+        return chunks
+
+    def _synthesize_chunk(self, text: str, speaker: str) -> np.ndarray:
+        """Синтез одного фрагмента текста, возвращает float32 моно-массив."""
         torch = self._torch
-        spk = speaker or self.default_speaker
-
         with torch.inference_mode():
             if self._apply_tts is not None:
                 audio = self._apply_tts(
@@ -103,13 +137,34 @@ class SileroTTSEngine:
                     symbols=self._symbols,
                     device=self.device,
                 )[0]
-                audio_np = audio.detach().cpu().numpy().astype(np.float32)
-            else:
-                audio_np = self._model.apply_tts(
+                return audio.detach().cpu().numpy().astype(np.float32)
+            return (
+                self._model.apply_tts(
                     text=text,
-                    speaker=spk,
+                    speaker=speaker,
                     sample_rate=self.sample_rate,
-                ).detach().cpu().numpy().astype(np.float32)
+                )
+                .detach()
+                .cpu()
+                .numpy()
+                .astype(np.float32)
+            )
+
+    def synthesize_wav_bytes(self, text: str, speaker: str | None = None) -> bytes:
+        if self._model is None or self._torch is None:
+            raise RuntimeError("Silero model is not loaded")
+
+        spk = speaker or self.default_speaker
+        chunks = self._split_long_text(text, self.max_chars_per_chunk)
+        if not chunks:
+            # Пустой текст — минимальная тишина
+            chunks = [" "]
+
+        if len(chunks) > 1:
+            log.debug("Silero long text split into %s chunks", len(chunks))
+
+        parts = [self._synthesize_chunk(chunk, spk) for chunk in chunks]
+        audio_np = np.concatenate(parts, axis=0)
 
         buf = io.BytesIO()
         sf.write(buf, audio_np, self.sample_rate, format="WAV", subtype="PCM_16")

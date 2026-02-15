@@ -113,3 +113,12 @@ def test_speech_response_format_wav(client: TestClient, valid_speech_payload: di
     response = client.post("/v1/audio/speech", json=valid_speech_payload)
     assert response.status_code == 200
     assert response.headers["content-type"] == "audio/wav"
+
+
+def test_speech_with_latin_text_succeeds(client: TestClient, valid_speech_payload: dict) -> None:
+    """Текст с латиницей (английские слова) не ломает запрос — транслитерация в кириллицу."""
+    valid_speech_payload["input"] = "Привет, hello и API."
+    response = client.post("/v1/audio/speech", json=valid_speech_payload)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/wav"
+    assert len(response.content) > 0
