@@ -1,15 +1,15 @@
-"""Транслитерация латиницы в кириллицу для озвучки английских слов русской TTS (Silero)."""
+"""Latin-to-Cyrillic transliteration to pronounce English words with Russian TTS (Silero)."""
 import re
 
-# Латиница → кириллица (озвучивание по-русски: hello → хеллоу)
+# Latin → Cyrillic (Russian-style pronunciation: hello → "khello" style)
 _LATIN_TO_CYRILLIC = str.maketrans(
     "abvgdezijklmnoprstufhcABVGDEZIJKLMNOPRSTUFHC",
     "абвгдезийклмнопрстуфхцАБВГДЕЗИЙКЛМНОПРСТУФХЦ",
 )
-# Доп. буквы: q→к, w→в, y→й (x обрабатываем отдельно как x→кс)
+# Extra letters: q→k, w→v, y→y (x is handled separately as x→ks)
 _LATIN_TO_CYRILLIC.update(str.maketrans("qQwWyY", "кКвВйЙ"))
 
-# Диграфы (обрабатываем до одиночных, чтобы ch→ч, sh→ш)
+# Digraphs (processed before single letters so ch→ch-like, sh→sh-like)
 _LATIN_DIGRAPHS = [
     ("ch", "ч"), ("Ch", "Ч"), ("CH", "Ч"),
     ("sh", "ш"), ("Sh", "Ш"), ("SH", "Ш"),
@@ -17,13 +17,13 @@ _LATIN_DIGRAPHS = [
     ("yo", "ё"), ("Yo", "Ё"), ("YO", "Ё"),
     ("yu", "ю"), ("Yu", "Ю"), ("YU", "Ю"),
     ("ya", "я"), ("Ya", "Я"), ("YA", "Я"),
-    ("ye", "е"), ("Ye", "Е"), ("YE", "Е"),  # yes → ес
+    ("ye", "е"), ("Ye", "Е"), ("YE", "Е"),  # yes → "yes" pronounced as "es"
     ("ts", "ц"), ("Ts", "Ц"), ("TS", "Ц"),
 ]
 
 
 def _transliterate_word(word: str) -> str:
-    """Один токен (только латинские буквы) в кириллицу."""
+    """Converts one token (Latin letters only) to Cyrillic."""
     s = word.replace("x", "кс").replace("X", "Кс")
     for lat, cyr in _LATIN_DIGRAPHS:
         s = s.replace(lat, cyr)
@@ -32,10 +32,10 @@ def _transliterate_word(word: str) -> str:
 
 def transliterate_latin_to_cyrillic(text: str) -> str:
     """
-    Заменяет слова из латинских букв на кириллическую транслитерацию.
-    Остальной текст (кириллица, цифры, пунктуация) не меняется.
+    Replaces words made of Latin letters with Cyrillic transliteration.
+    The rest of the text (Cyrillic, digits, punctuation) remains unchanged.
     """
-    # Токены: последовательности латинских букв (a-zA-Z)
+    # Tokens: sequences of Latin letters (a-zA-Z)
     def repl(m: re.Match) -> str:
         return _transliterate_word(m.group(0))
 

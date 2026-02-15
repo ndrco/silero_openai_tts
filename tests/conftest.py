@@ -1,4 +1,4 @@
-"""Фикстуры для тестов API: тестовое приложение с мок-движком (без загрузки Silero)."""
+"""API test fixtures: test app with a mock engine (without loading Silero)."""
 import io
 import tempfile
 
@@ -16,7 +16,7 @@ from app.text.normalize import TextNormalizer
 
 
 def _minimal_wav_bytes(sample_rate: int = 48000) -> bytes:
-    """Минимальный валидный WAV (тишина ~10 ms) для тестов."""
+    """Minimal valid WAV (silence ~10 ms) for tests."""
     buf = io.BytesIO()
     samples = np.zeros(int(sample_rate * 0.01), dtype=np.float32)
     sf.write(buf, samples, sample_rate, format="WAV", subtype="PCM_16")
@@ -24,7 +24,7 @@ def _minimal_wav_bytes(sample_rate: int = 48000) -> bytes:
 
 
 class MockSileroEngine:
-    """Мок движка TTS: не загружает модель, возвращает короткий WAV."""
+    """Mock TTS engine: does not load a model, returns a short WAV."""
 
     default_speaker = "baya"
     sample_rate = 48000
@@ -42,7 +42,7 @@ class MockSileroEngine:
 
 
 def create_test_app(*, require_auth: bool = False, cache_dir: str | None = None, language_aware_routing: bool = False) -> FastAPI:
-    """Создаёт FastAPI-приложение для тестов с мок-движком."""
+    """Creates a FastAPI test app with a mock engine."""
     app = FastAPI(title="Silero TTS Test", version="0.1.0")
     app.include_router(tts_router)
 
@@ -69,43 +69,43 @@ def create_test_app(*, require_auth: bool = False, cache_dir: str | None = None,
 
 @pytest.fixture
 def app():
-    """Приложение без авторизации."""
+    """App without authentication."""
     return create_test_app(require_auth=False)
 
 
 @pytest.fixture
 def app_with_auth():
-    """Приложение с включённой авторизацией."""
+    """App with authentication enabled."""
     return create_test_app(require_auth=True)
 
 
 @pytest.fixture
 def app_with_routing():
-    """Приложение с language-aware routing."""
+    """App with language-aware routing."""
     return create_test_app(require_auth=False, language_aware_routing=True)
 
 
 @pytest.fixture
 def client(app: FastAPI):
-    """HTTP-клиент для приложения без авторизации."""
+    """HTTP client for the app without authentication."""
     return TestClient(app)
 
 
 @pytest.fixture
 def client_with_auth(app_with_auth: FastAPI):
-    """HTTP-клиент для приложения с авторизацией."""
+    """HTTP client for the app with authentication."""
     return TestClient(app_with_auth)
 
 
 @pytest.fixture
 def client_with_routing(app_with_routing: FastAPI):
-    """HTTP-клиент для приложения с language-aware routing."""
+    """HTTP client for the app with language-aware routing."""
     return TestClient(app_with_routing)
 
 
 @pytest.fixture
 def valid_speech_payload():
-    """Валидное тело запроса для POST /v1/audio/speech."""
+    """Valid request body for POST /v1/audio/speech."""
     return {
         "model": "gpt-4o-mini-tts",
         "voice": "alloy",

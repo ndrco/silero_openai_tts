@@ -1,4 +1,4 @@
-"""Тесты нормализации текста (URL → «ссылка», числа EN и т.д.)."""
+"""Tests for text normalization (URL → "link", EN numbers, etc.)."""
 from app.text.normalize import TextNormalizer, replace_urls
 from app.text.numbers import expand_numbers_en
 
@@ -20,7 +20,7 @@ def test_normalizer_replaces_url():
 
 
 def test_label_kept_url_replaced():
-    """Подпись (GitHub:) остаётся, заменяется только URL на «ссылка»."""
+    """The label (GitHub:) remains; only the URL is replaced with "link"."""
     n = TextNormalizer(transliterate_latin=False, expand_numeric=False)
     out = n.run("Ссылка на GitHub: https://github.com/ndrco/silero_openai_tts")
     assert out == "Ссылка на GitHub: ссылка"

@@ -1,4 +1,4 @@
-"""Тесты кэширования моделей Silero в локальный каталог."""
+"""Tests for caching Silero models in a local directory."""
 import os
 import sys
 import types
@@ -41,7 +41,7 @@ class _FakeInferenceMode:
 
 
 def test_engine_sets_torch_home_to_models_dir(tmp_path, monkeypatch):
-    """При загрузке движка TORCH_HOME указывает на каталог моделей проекта."""
+    """When loading the engine, TORCH_HOME points to the project models directory."""
     fake_torch = _FakeTorch()
     monkeypatch.setitem(sys.modules, "torch", fake_torch)
 
