@@ -4,8 +4,10 @@ from fastapi import FastAPI
 from app.settings import Settings
 from app.tts.engine import SileroTTSEngine
 from app.text.normalize import TextNormalizer
+from app.text.language_router import LanguageAwareRouter
 from app.audio.cache import DiskCache
 from app.api.routes_tts import router as tts_router
+
 
 def create_app() -> FastAPI:
     settings = Settings()
@@ -24,7 +26,7 @@ def create_app() -> FastAPI:
 
     app = FastAPI(title="Silero OpenAI-compatible TTS", version="0.1.0")
 
-    engine = SileroTTSEngine(
+    ru_engine = SileroTTSEngine(
         language=settings.silero_language,
         model_id=settings.silero_model_id,
         device=settings.silero_device,
@@ -33,18 +35,47 @@ def create_app() -> FastAPI:
         num_threads=settings.silero_num_threads,
         max_chars_per_chunk=settings.silero_max_chars_per_chunk,
     )
-    normalizer = TextNormalizer(transliterate_latin=settings.transliterate_latin)
+
+    en_engine = None
+    if settings.language_aware_routing and settings.silero_en_enabled:
+        en_engine = SileroTTSEngine(
+            language=settings.silero_en_language,
+            model_id=settings.silero_en_model_id,
+            device=settings.silero_device,
+            sample_rate=settings.silero_en_sample_rate,
+            default_speaker=settings.silero_en_default_speaker,
+            num_threads=settings.silero_num_threads,
+            max_chars_per_chunk=settings.silero_max_chars_per_chunk,
+        )
+
+    if settings.language_aware_routing:
+        # В language-aware режиме транслитерацию отключаем,
+        # чтобы EN-сегменты не превращались в кириллицу.
+        ru_normalizer = TextNormalizer(transliterate_latin=False)
+        en_normalizer = TextNormalizer(transliterate_latin=False, expand_numeric=False)
+        lang_router = LanguageAwareRouter()
+    else:
+        ru_normalizer = TextNormalizer(transliterate_latin=settings.transliterate_latin)
+        en_normalizer = None
+        lang_router = None
+
     cache = DiskCache(settings.cache_dir, max_files=settings.cache_max_files)
 
     app.state.settings = settings
-    app.state.engine = engine
-    app.state.normalizer = normalizer
+    app.state.engine = ru_engine
+    app.state.en_engine = en_engine
+    app.state.normalizer = ru_normalizer
+    app.state.en_normalizer = en_normalizer
+    app.state.language_router = lang_router
     app.state.cache = cache
 
-    # Загружаем модель сразу при создании app, чтобы не зависеть от порядка startup
-    engine.load()
+    # Загружаем модель(и) сразу при создании app, чтобы не зависеть от порядка startup
+    ru_engine.load()
+    if en_engine is not None:
+        en_engine.load()
 
     app.include_router(tts_router)
     return app
+
 
 app = create_app()
