@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
         num_threads=settings.silero_num_threads,
         max_chars_per_chunk=settings.silero_max_chars_per_chunk,
         chunk_pause_sec=settings.silero_pause_between_fragments_sec,
+        models_dir=settings.silero_models_dir,
     )
 
     en_engine = None
@@ -48,6 +49,7 @@ def create_app() -> FastAPI:
             num_threads=settings.silero_num_threads,
             max_chars_per_chunk=settings.silero_max_chars_per_chunk,
             chunk_pause_sec=settings.silero_pause_between_fragments_sec,
+            models_dir=settings.silero_models_dir,
         )
 
     if settings.language_aware_routing:
