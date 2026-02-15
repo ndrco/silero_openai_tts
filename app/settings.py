@@ -26,6 +26,14 @@ class Settings(BaseSettings):
 
     transliterate_latin: bool = True  # латиница → кириллица для озвучки английских слов
 
+    language_aware_routing: bool = False
+
+    silero_en_enabled: bool = True
+    silero_en_language: str = "en"
+    silero_en_model_id: str = "v3_en"
+    silero_en_sample_rate: int = 48000
+    silero_en_default_speaker: str = "en_0"
+
     class Config:
         env_file = ".env"
         extra = "ignore"

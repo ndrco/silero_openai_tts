@@ -1,7 +1,6 @@
 """Фикстуры для тестов API: тестовое приложение с мок-движком (без загрузки Silero)."""
 import io
 import tempfile
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -12,6 +11,7 @@ from fastapi.testclient import TestClient
 from app.api.routes_tts import router as tts_router
 from app.audio.cache import DiskCache
 from app.settings import Settings
+from app.text.language_router import LanguageAwareRouter
 from app.text.normalize import TextNormalizer
 
 
@@ -29,14 +29,19 @@ class MockSileroEngine:
     default_speaker = "baya"
     sample_rate = 48000
 
+    def __init__(self, default_speaker: str = "baya") -> None:
+        self.default_speaker = default_speaker
+        self.calls: list[tuple[str, str | None]] = []
+
     def load(self) -> None:
         pass
 
     def synthesize_wav_bytes(self, text: str, speaker: str | None = None) -> bytes:
+        self.calls.append((text, speaker))
         return _minimal_wav_bytes(self.sample_rate)
 
 
-def create_test_app(*, require_auth: bool = False, cache_dir: str | None = None) -> FastAPI:
+def create_test_app(*, require_auth: bool = False, cache_dir: str | None = None, language_aware_routing: bool = False) -> FastAPI:
     """Создаёт FastAPI-приложение для тестов с мок-движком."""
     app = FastAPI(title="Silero TTS Test", version="0.1.0")
     app.include_router(tts_router)
@@ -48,11 +53,15 @@ def create_test_app(*, require_auth: bool = False, cache_dir: str | None = None)
         cache_dir=cache_path,
         cache_max_files=100,
         ffmpeg_bin="ffmpeg",
+        language_aware_routing=language_aware_routing,
     )
 
     app.state.settings = settings
-    app.state.engine = MockSileroEngine()
-    app.state.normalizer = TextNormalizer()
+    app.state.engine = MockSileroEngine(default_speaker="baya")
+    app.state.en_engine = MockSileroEngine(default_speaker="en_0") if language_aware_routing else None
+    app.state.normalizer = TextNormalizer(transliterate_latin=not language_aware_routing)
+    app.state.en_normalizer = TextNormalizer(transliterate_latin=False, expand_numeric=False) if language_aware_routing else None
+    app.state.language_router = LanguageAwareRouter() if language_aware_routing else None
     app.state.cache = DiskCache(settings.cache_dir, max_files=settings.cache_max_files)
 
     return app
@@ -71,6 +80,12 @@ def app_with_auth():
 
 
 @pytest.fixture
+def app_with_routing():
+    """Приложение с language-aware routing."""
+    return create_test_app(require_auth=False, language_aware_routing=True)
+
+
+@pytest.fixture
 def client(app: FastAPI):
     """HTTP-клиент для приложения без авторизации."""
     return TestClient(app)
@@ -80,6 +95,12 @@ def client(app: FastAPI):
 def client_with_auth(app_with_auth: FastAPI):
     """HTTP-клиент для приложения с авторизацией."""
     return TestClient(app_with_auth)
+
+
+@pytest.fixture
+def client_with_routing(app_with_routing: FastAPI):
+    """HTTP-клиент для приложения с language-aware routing."""
+    return TestClient(app_with_routing)
 
 
 @pytest.fixture

@@ -122,3 +122,22 @@ def test_speech_with_latin_text_succeeds(client: TestClient, valid_speech_payloa
     assert response.status_code == 200
     assert response.headers["content-type"] == "audio/wav"
     assert len(response.content) > 0
+
+
+def test_speech_with_language_aware_routing_uses_both_engines(
+    client_with_routing: TestClient, app_with_routing, valid_speech_payload: dict
+) -> None:
+    """В mixed-тексте RU/EN сегменты синтезируются разными движками и склеиваются."""
+    payload = {**valid_speech_payload, "input": "Привет, hello world! Пока."}
+    response = client_with_routing.post("/v1/audio/speech", json=payload)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/wav"
+    assert response.content[:4] == b"RIFF"
+
+    ru_calls = app_with_routing.state.engine.calls
+    en_calls = app_with_routing.state.en_engine.calls
+
+    assert len(ru_calls) == 2
+    assert len(en_calls) == 1
+    assert "Привет" in ru_calls[0][0]
+    assert "hello" in en_calls[0][0].lower()
