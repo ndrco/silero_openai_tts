@@ -119,6 +119,7 @@ OpenClaw expects an OpenAI-compatible TTS endpoint. Run this server locally and 
 - **API key**: optional (only if you enable `REQUIRE_AUTH`)
 
 ### Recommended OpenClaw config
+Add the following to your OpenClaw config (e.g. ~/.openclaw/openclaw.json):
 
 **Required** (so OpenClaw sends TTS requests to this local server and doesn’t need a real key):
 
