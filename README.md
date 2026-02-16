@@ -118,6 +118,34 @@ OpenClaw expects an OpenAI-compatible TTS endpoint. Run this server locally and 
 - **Endpoint**: `/v1/audio/speech`
 - **API key**: optional (only if you enable `REQUIRE_AUTH`)
 
+### Recommended OpenClaw config
+
+**Required** (so OpenClaw sends TTS requests to this local server and doesn’t need a real key):
+
+```json
+"env": {
+  "OPENAI_TTS_BASE_URL": "http://127.0.0.1:8000/v1",
+  "OPENAI_API_KEY": "dummy-local-key"
+}
+```
+
+- `OPENAI_TTS_BASE_URL` points OpenClaw to the local OpenAI-compatible API base (note the `/v1` suffix).
+- `OPENAI_API_KEY` is a placeholder because many OpenAI-compatible clients expect a key field even for local endpoints; if you enable `REQUIRE_AUTH`, set this to the same token as the server’s `API_KEY`.
+
+**Nice to have** (auto-speak + default voice, with Edge TTS disabled):
+
+```json
+"messages": {
+  "ackReactionScope": "group-mentions",
+  "tts": {
+    "provider": "openai",
+    "auto": "always",
+    "openai": { "voice": "alloy" },
+    "edge": { "enabled": false }
+  }
+}
+```
+
 Result: OpenClaw gets local speech synthesis with lower latency and no external calls.
 
 ---

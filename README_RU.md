@@ -118,6 +118,34 @@ OpenClaw ожидает OpenAI-совместимый TTS endpoint. Запуст
 - **Endpoint**: `/v1/audio/speech`
 - **API key**: опционально (только если вы включили `REQUIRE_AUTH`)
 
+### Рекомендуемая конфигурация OpenClaw
+
+**Обязательно** (чтобы OpenClaw отправлял запросы TTS в этот локальный сервер и не требовал реального ключа):
+
+```json
+"env": {
+  "OPENAI_TTS_BASE_URL": "http://127.0.0.1:8000/v1",
+  "OPENAI_API_KEY": "dummy-local-key"
+}
+```
+
+- `OPENAI_TTS_BASE_URL` — базовый URL OpenAI-совместимого API (важно: с суффиксом `/v1`).
+- `OPENAI_API_KEY` — “заглушка”: многим клиентам нужен какой-то ключ в конфиге даже для локального endpoint; если включите `REQUIRE_AUTH`, укажите здесь тот же токен, что и `API_KEY` на сервере.
+
+**Желательно** (авто-озвучка + голос по умолчанию, при этом Edge TTS выключен):
+
+```json
+"messages": {
+  "ackReactionScope": "group-mentions",
+  "tts": {
+    "provider": "openai",
+    "auto": "always",
+    "openai": { "voice": "alloy" },
+    "edge": { "enabled": false }
+  }
+}
+```
+
 Результат: OpenClaw получает локальный синтез речи с меньшей задержкой и без внешних вызовов.
 
 ---
