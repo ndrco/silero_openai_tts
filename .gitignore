@@ -6,3 +6,4 @@ __pycache__/
 out/
 models/*
 !models/.gitkeep
+*.egg-info/

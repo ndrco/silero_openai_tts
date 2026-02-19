@@ -27,3 +27,15 @@ pythonpath = ["."]
 
 [tool.uvicorn]
 factory = false
+
+[project.scripts]
+silero-tts = "app.cli:main"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["tests*", "models*", "out*"]
