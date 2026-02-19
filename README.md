@@ -10,6 +10,11 @@ client to this server’s base URL.
 Under the hood it uses **Silero TTS** models via `torch.hub` (downloaded on first run), plus a small text
 normalization pipeline focused on **Russian and English**, including **numeral expansion**.
 
+## Why this project is useful
+
+The key advantage is **fast speech synthesis on CPU**. In practical local setups this lets you keep scarce GPU
+resources focused on your local LLM, while TTS runs separately on CPU with low latency.
+
 ---
 
 ## Features
@@ -66,6 +71,18 @@ cp .env.example .env
 
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+If you installed the package with `pip install -e .`, you can also use the console command:
+
+```bash
+silero-tts
+```
+
+Or run it directly from the virtual environment without activating it first:
+
+```bash
+./.venv/bin/silero-tts
 ```
 
 On first start the server will download the selected Silero model (via `torch.hub`).
