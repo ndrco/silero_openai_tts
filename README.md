@@ -50,6 +50,22 @@ sudo apt update
 sudo apt install -y ffmpeg libsndfile1
 ```
 
+**Windows (PowerShell):**
+
+1. Install Python 3.10+ from the official website and make sure `python` is available in `PATH`.
+2. Install FFmpeg (required for non-WAV formats and speed control), for example via winget:
+
+```powershell
+winget install Gyan.FFmpeg
+```
+
+3. Verify installation:
+
+```powershell
+python --version
+ffmpeg -version
+```
+
 ### 2) Python environment
 
 ```bash
@@ -57,6 +73,21 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -U pip
 pip install -e .
+```
+
+**Windows (PowerShell):**
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -U pip
+python -m pip install -e .
+```
+
+If PowerShell blocks script execution, enable local scripts for the current user once:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ### 3) Configure
@@ -73,6 +104,12 @@ cp .env.example .env
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
+**Windows (PowerShell):**
+
+```powershell
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
 If you installed the package with `pip install -e .`, you can also use the console command:
 
 ```bash
@@ -83,6 +120,12 @@ Or run it directly from the virtual environment without activating it first:
 
 ```bash
 ./.venv/bin/silero-tts
+```
+
+Windows equivalent:
+
+```powershell
+.\.venv\Scripts\silero-tts.exe
 ```
 
 On first start the server will download the selected Silero model (via `torch.hub`).
@@ -165,6 +208,23 @@ Add the following to your OpenClaw config (e.g. ~/.openclaw/openclaw.json):
 ```
 
 Result: OpenClaw gets local speech synthesis with lower latency and no external calls.
+
+### Automatic playback (auto-speak)
+
+You can enable automatic playback of generated TTS responses via:
+
+```json
+"messages": {
+  "tts": {
+    "provider": "openai",
+    "auto": "always"
+  }
+}
+```
+
+This mode is especially useful in clients where voice answers should be played immediately without manual clicks.
+
+> Note: in **OpenClaw webchat** auto-play currently works inconsistently due to browser/web-client limitations and may require a manual Play click. For stable always-on playback, it is usually better to use non-webchat clients/environments.
 
 ---
 

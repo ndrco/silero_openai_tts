@@ -50,6 +50,22 @@ sudo apt update
 sudo apt install -y ffmpeg libsndfile1
 ```
 
+**Windows (PowerShell):**
+
+1. Установите Python 3.10+ с официального сайта и убедитесь, что команда `python` доступна в `PATH`.
+2. Установите FFmpeg (нужен для форматов кроме WAV и изменения скорости), например через winget:
+
+```powershell
+winget install Gyan.FFmpeg
+```
+
+3. Проверьте установку:
+
+```powershell
+python --version
+ffmpeg -version
+```
+
 ### 2) Python-окружение
 
 ```bash
@@ -57,6 +73,21 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -U pip
 pip install -e .
+```
+
+**Windows (PowerShell):**
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -U pip
+python -m pip install -e .
+```
+
+Если PowerShell блокирует запуск скриптов, один раз разрешите локальные скрипты для текущего пользователя:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ### 3) Настройка
@@ -73,6 +104,12 @@ cp .env.example .env
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
+**Windows (PowerShell):**
+
+```powershell
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
 Если проект установлен через `pip install -e .`, можно запускать через консольную команду:
 
 ```bash
@@ -83,6 +120,12 @@ silero-tts
 
 ```bash
 ./.venv/bin/silero-tts
+```
+
+Эквивалент для Windows:
+
+```powershell
+.\.venv\Scripts\silero-tts.exe
 ```
 
 При первом старте сервер скачает выбранную модель Silero (через `torch.hub`).
@@ -165,6 +208,23 @@ OpenClaw ожидает OpenAI-совместимый TTS endpoint. Запуст
 ```
 
 Результат: OpenClaw получает локальный синтез речи с меньшей задержкой и без внешних вызовов.
+
+### Автоматическое проигрывание (auto-speak)
+
+Можно включить автоматическое воспроизведение озвученных ответов через:
+
+```json
+"messages": {
+  "tts": {
+    "provider": "openai",
+    "auto": "always"
+  }
+}
+```
+
+Этот режим особенно полезен там, где важно, чтобы ответ озвучивался сразу, без ручного нажатия кнопки воспроизведения.
+
+> Важно: в **OpenClaw webchat** авто-проигрывание сейчас работает нестабильно из-за ограничений браузера/веб-клиента и иногда требует ручного запуска. Поэтому функция в первую очередь полезна в не-webchat клиентах и сценариях, где нет подобных ограничений.
 
 ---
 
