@@ -141,3 +141,28 @@ def test_speech_with_language_aware_routing_uses_both_engines(
     assert len(en_calls) == 1
     assert "Привет" in ru_calls[0][0]
     assert "hello" in en_calls[0][0].lower()
+
+
+def test_skip_playback(client: TestClient) -> None:
+    """Skip endpoint returns 200 with skipped status."""
+    response = client.delete("/v1/audio/speech/skip")
+    assert response.status_code == 200
+    data = response.json()
+    assert "skipped" in data
+    assert isinstance(data["skipped"], bool)
+
+
+def test_skip_playback_with_auth(client_with_auth: TestClient) -> None:
+    """Skip endpoint requires auth when require_auth=True."""
+    # Without auth
+    response = client_with_auth.delete("/v1/audio/speech/skip")
+    assert response.status_code == 401
+    
+    # With valid auth
+    response = client_with_auth.delete(
+        "/v1/audio/speech/skip",
+        headers={"Authorization": "Bearer test-secret-key"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "skipped" in data

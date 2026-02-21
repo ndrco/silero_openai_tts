@@ -168,6 +168,22 @@ If `REQUIRE_AUTH=true`, add:
 -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
+### Skip playback
+
+To skip the currently playing audio (when `AUTO_PLAY=true`):
+
+```bash
+curl -X DELETE http://localhost:8000/v1/audio/speech/skip \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+Response:
+```json
+{"skipped": true}
+```
+
+If no audio was playing, returns `{"skipped": false}`.
+
 ---
 
 ## OpenClaw integration
@@ -262,6 +278,8 @@ Configuration is done via environment variables (loaded from `.env`).
 - `FFMPEG_BIN` (default: `ffmpeg`) — path to FFmpeg binary.
 - `FFPLAY_BIN` (default: `ffplay`) — path to FFplay binary (used for auto-play).
 - `AUTO_PLAY` (default: `false`) — if `true`, synthesized audio is automatically played through the server's default audio output device. Requires `ffplay` (included with ffmpeg).
+  - **Queued playback**: Multiple requests are played sequentially without overlapping.
+  - **Skip support**: Use `DELETE /v1/audio/speech/skip` to skip the currently playing audio.
 
 ---
 

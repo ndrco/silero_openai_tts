@@ -8,7 +8,7 @@ from app.text.normalize import replace_urls
 from app.tts.voices import map_voice_to_silero
 from app.audio.concat import concat_wav_bytes
 from app.audio.encode import encode_audio, media_type_for
-from app.audio.player import play_audio
+from app.audio.player import play_audio, skip_playback
 
 router = APIRouter()
 log = logging.getLogger("silero")
@@ -108,3 +108,11 @@ def create_speech(payload: SpeechRequest, request: Request):
         play_audio(wav_for_play, ffplay_bin=settings.ffplay_bin, volume=settings.auto_play_volume)
 
     return StreamingResponse(BytesIO(out_bytes), media_type=media_type_for(out_fmt))
+
+
+@router.delete("/v1/audio/speech/skip")
+def skip_speech(request: Request):
+    """Skip the currently playing audio."""
+    _check_auth(request)
+    skipped = skip_playback()
+    return {"skipped": skipped}

@@ -168,6 +168,22 @@ curl http://localhost:8000/v1/audio/speech   -H "Content-Type: application/json"
 -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
+### Пропуск воспроизведения
+
+Чтобы пропустить текущее воспроизведение (когда `AUTO_PLAY=true`):
+
+```bash
+curl -X DELETE http://localhost:8000/v1/audio/speech/skip \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+Ответ:
+```json
+{"skipped": true}
+```
+
+Если ничего не воспроизводилось, возвращает `{"skipped": false}`.
+
 ---
 
 ## Интеграция с OpenClaw
@@ -260,6 +276,10 @@ OpenClaw ожидает OpenAI-совместимый TTS endpoint. Запуст
 ### Кодирование аудио
 
 - `FFMPEG_BIN` (по умолчанию: `ffmpeg`) — путь к бинарнику FFmpeg.
+- `FFPLAY_BIN` (по умолчанию: `ffplay`) — путь к бинарнику FFplay (используется для автопроигрывания).
+- `AUTO_PLAY` (по умолчанию: `false`) — если `true`, синтезированное аудио автоматически воспроизводится через устройство вывода звука сервера. Требуется `ffplay` (входит в ffmpeg).
+  - **Очередь воспроизведения**: Несколько запросов воспроизводятся последовательно без наложения.
+  - **Поддержка пропуска**: Используйте `DELETE /v1/audio/speech/skip` для пропуска текущего воспроизведения.
 
 ---
 
