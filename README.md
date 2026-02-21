@@ -40,6 +40,13 @@ resources focused on your local LLM, while TTS runs separately on CPU with low l
 
 ## Quickstart
 
+### 0) Clone the repository
+
+```bash
+git clone https://github.com/ndrco/silero_openai_tts.git
+cd silero_openai_tts
+```
+
 ### 1) System dependencies
 
 You need **FFmpeg** (for encoding and speed control) and **libsndfile** (for WAV I/O).
