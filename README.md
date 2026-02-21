@@ -224,7 +224,7 @@ You can enable automatic playback of generated TTS responses via:
 
 This mode is especially useful in clients where voice answers should be played immediately without manual clicks.
 
-> Note: in **OpenClaw webchat** auto-play currently works inconsistently due to browser/web-client limitations and may require a manual Play click. For stable always-on playback, it is usually better to use non-webchat clients/environments.
+> Note: in **OpenClaw webchat** native auto-play currently works inconsistently due to browser/web-client limitations and may require a manual Play click.
 
 ---
 
