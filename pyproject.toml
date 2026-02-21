@@ -8,6 +8,7 @@ dependencies = [
   "pydantic>=2.5",
   "pydantic-settings>=2.1",
   "numpy>=1.23",
+  "scipy>=1.10",
   "soundfile>=0.12",
   "num2words>=0.5",
   "pymorphy3>=2.0",

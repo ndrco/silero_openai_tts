@@ -200,6 +200,8 @@ Configuration is done via environment variables (loaded from `.env`).
 ### Audio encoding
 
 - `FFMPEG_BIN` (default: `ffmpeg`) — path to FFmpeg binary.
+- `FFPLAY_BIN` (default: `ffplay`) — path to FFplay binary (used for auto-play).
+- `AUTO_PLAY` (default: `false`) — if `true`, synthesized audio is automatically played through the server's default audio output device. Requires `ffplay` (included with ffmpeg).
 
 ---
 

@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     cache_max_files: int = 2000
 
     ffmpeg_bin: str = "ffmpeg"
+    ffplay_bin: str = "ffplay.exe"  # Windows ffplay for WSL2 compatibility
+    auto_play: bool = True  # auto-play audio on the server side
+    auto_play_volume: float = 1.0  # auto-play volume (1.0 = 100%)
 
     transliterate_latin: bool = True  # Latin → Cyrillic transliteration for pronouncing English words
 

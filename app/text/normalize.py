@@ -12,7 +12,7 @@ URL_RE = re.compile(
 
 def replace_urls(text: str) -> str:
     """Replaces only URLs in text with the word "link" for TTS. Labels (e.g., GitHub:) stay intact."""
-    return URL_RE.sub(" ссылка ", text)
+    return URL_RE.sub(" link ", text)
 
 
 class TextNormalizer:

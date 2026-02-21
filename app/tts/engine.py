@@ -34,7 +34,7 @@ class SileroTTSEngine:
             return torch.device("cpu")
         if self.device_mode == "cuda":
             if not torch.cuda.is_available():
-                raise RuntimeError("SILERO_DEVICE=cuda задан, но torch.cuda.is_available() == False")
+                raise RuntimeError("SILERO_DEVICE=cuda specified, but torch.cuda.is_available() == False")
             return torch.device("cuda")
 
         # auto
@@ -47,9 +47,9 @@ class SileroTTSEngine:
             import torch
         except ImportError as e:
             raise RuntimeError(
-                "PyTorch (torch) не установлен.\n"
+                "PyTorch (torch) is not installed.\n"
                 "CPU:  pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu\n"
-                "CUDA: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126  (пример)"
+                "CUDA: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126  (example)"
             ) from e
 
         self._torch = torch

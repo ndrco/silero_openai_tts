@@ -8,6 +8,7 @@ from app.text.normalize import replace_urls
 from app.tts.voices import map_voice_to_silero
 from app.audio.concat import concat_wav_bytes
 from app.audio.encode import encode_audio, media_type_for
+from app.audio.player import play_audio
 
 router = APIRouter()
 log = logging.getLogger("silero")
@@ -94,4 +95,16 @@ def create_speech(payload: SpeechRequest, request: Request):
     )
 
     cache.put(key, out_bytes)
+
+    # Auto-play on the server side (use original WAV for better quality)
+    if settings.auto_play:
+        # Apply only speed to WAV for playback
+        wav_for_play = encode_audio(
+            wav_bytes=wav_bytes,
+            out_format="wav",
+            ffmpeg_bin=request.app.state.settings.ffmpeg_bin,
+            speed=payload.speed or 1.0,
+        )
+        play_audio(wav_for_play, ffplay_bin=settings.ffplay_bin, volume=settings.auto_play_volume)
+
     return StreamingResponse(BytesIO(out_bytes), media_type=media_type_for(out_fmt))
