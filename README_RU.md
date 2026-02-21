@@ -40,6 +40,13 @@
 
 ## Быстрый старт
 
+### 0) Клонирование репозитория
+
+```bash
+git clone https://github.com/ndrco/silero_openai_tts.git
+cd silero_openai_tts
+```
+
 ### 1) Системные зависимости
 
 Нужны **FFmpeg** (для кодирования и управления скоростью) и **libsndfile** (для ввода/вывода WAV).
