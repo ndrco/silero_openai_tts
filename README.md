@@ -287,6 +287,7 @@ Configuration is done via environment variables (loaded from `.env`).
 - `AUTO_PLAY` (default: `false`) — if `true`, synthesized audio is automatically played through the server's default audio output device. Requires `ffplay` (included with ffmpeg).
   - **Queued playback**: Multiple requests are played sequentially without overlapping.
   - **Skip support**: Use `DELETE /v1/audio/speech/skip` to skip the currently playing audio.
+- `AUTO_PLAY_SHOW_SKIP_WINDOW` (default: `false`) — if `true`, a local Tkinter window with the **Skip** button is shown while server playback is active; the button is hidden when playback finishes.
 
 ---
 

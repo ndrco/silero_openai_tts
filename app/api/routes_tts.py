@@ -105,7 +105,12 @@ def create_speech(payload: SpeechRequest, request: Request):
             ffmpeg_bin=request.app.state.settings.ffmpeg_bin,
             speed=payload.speed or 1.0,
         )
-        play_audio(wav_for_play, ffplay_bin=settings.ffplay_bin, volume=settings.auto_play_volume)
+        play_audio(
+            wav_for_play,
+            ffplay_bin=settings.ffplay_bin,
+            volume=settings.auto_play_volume,
+            show_skip_window=settings.auto_play_show_skip_window,
+        )
 
     return StreamingResponse(BytesIO(out_bytes), media_type=media_type_for(out_fmt))
 
