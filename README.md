@@ -10,10 +10,11 @@ client to this server’s base URL.
 Under the hood it uses **Silero TTS** models via `torch.hub` (downloaded on first run), plus a small text
 normalization pipeline focused on **Russian and English**, including **numeral expansion**.
 
-## Why this project is useful
+## What is this project for?
 
-The key advantage is **fast speech synthesis on CPU**. In practical local setups this lets you keep scarce GPU
-resources focused on your local LLM, while TTS runs separately on CPU with low latency.
+The project's key advantage is very fast CPU-based voice-over. In practice, this allows scarce GPU resources to be reserved for local LLM, while TTS can be run separately on the CPU with low latency.
+
+The project also implements voice-over autoplay directly on the server. This mode is especially useful because the current version of OpenClaw's built-in client-side autoplay (in the webchat browser) is unstable.
 
 ---
 
@@ -244,11 +245,6 @@ You can enable automatic playback of generated TTS responses via:
   }
 }
 ```
-
-This mode is especially useful in clients where voice answers should be played immediately without manual clicks.
-
-> Note: in **OpenClaw webchat** native auto-play currently works inconsistently due to browser/web-client limitations and may require a manual Play click.
-
 ---
 
 ## Configuration
