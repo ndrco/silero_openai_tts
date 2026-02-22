@@ -107,6 +107,10 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 cp .env.example .env
 ```
 
+```powershell
+copy .env.example .env
+```
+
 ### 4) Запуск
 
 ```bash

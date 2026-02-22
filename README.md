@@ -106,6 +106,10 @@ Copy `.env.example` to `.env` and edit as needed:
 cp .env.example .env
 ```
 
+```powershell
+copy .env.example .env
+```
+
 ### 4) Run
 
 ```bash
