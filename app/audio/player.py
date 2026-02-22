@@ -264,6 +264,7 @@ class AudioPlayer:
         with self._lock:
             if self._current_proc is not None and self._current_proc.poll() is None:
                 self._skip_event.set()
+                self._current_proc.terminate()
                 return True
         return False
 
