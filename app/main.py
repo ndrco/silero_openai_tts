@@ -7,6 +7,7 @@ from app.text.normalize import TextNormalizer
 from app.text.language_router import LanguageAwareRouter
 from app.audio.cache import DiskCache
 from app.api.routes_tts import router as tts_router
+from app.audio.player import stop_player
 
 
 def create_app() -> FastAPI:
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
 
     @app.on_event("shutdown")
     def _shutdown():
+        stop_player()
         cache_dir = app.state.settings.cache_dir
         try:
             shutil.rmtree(cache_dir)
