@@ -206,10 +206,22 @@ class AudioPlayer:
                 )
                 self._current_proc = proc
 
-            # Write audio data to stdin
+            # Write audio data to stdin. If playback was skipped while writing,
+            # ffplay may close stdin early which results in BrokenPipeError.
             assert proc.stdin is not None
-            proc.stdin.write(req.data)
-            proc.stdin.close()
+            try:
+                proc.stdin.write(req.data)
+            except BrokenPipeError:
+                if self._skip_event.is_set() or proc.poll() is not None:
+                    self._skip_event.clear()
+                    print("[player] Playback skipped")
+                    return
+                raise
+            finally:
+                try:
+                    proc.stdin.close()
+                except BrokenPipeError:
+                    pass
 
             # Wait for completion or skip signal
             while proc.poll() is None:
