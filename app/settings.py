@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     ffplay_bin: str = "ffplay.exe"  # Windows ffplay for WSL2 compatibility
     auto_play: bool = True  # auto-play audio on the server side
     auto_play_volume: float = 1.0  # auto-play volume (1.0 = 100%)
-    auto_play_show_skip_window: bool = False  # show Tkinter "Skip" button window during server playback
+    auto_play_show_skip_window: bool = True  # show Tkinter "Skip" button window during server playback
 
     transliterate_latin: bool = True  # Latin → Cyrillic transliteration for pronouncing English words
 
