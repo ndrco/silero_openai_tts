@@ -107,6 +107,8 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 cp .env.example .env
 ```
 
+**Windows (PowerShell):**
+
 ```powershell
 copy .env.example .env
 ```
