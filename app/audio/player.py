@@ -43,10 +43,10 @@ class _TkSkipWindowController:
             root.geometry("260x110")
             root.resizable(False, False)
 
-            label = tk.Label(root, text="Идет серверное воспроизведение")
+            label = tk.Label(root, text="Server playback is running")
             label.pack(pady=(12, 6))
 
-            button = tk.Button(root, text="Пропустить", width=20)
+            button = tk.Button(root, text="Skip", width=20)
             button.pack(pady=(0, 12))
             button.pack_forget()
 
@@ -205,6 +205,7 @@ class AudioPlayer:
                     stderr=subprocess.DEVNULL,
                 )
                 self._current_proc = proc
+            print("[player] Playback started")
 
             # Write audio data to stdin. If playback was skipped while writing,
             # ffplay may close stdin early which results in BrokenPipeError.
