@@ -9,10 +9,20 @@ URL_RE = re.compile(
     re.IGNORECASE,
 )
 
+_RU_ALLOWED_RE = re.compile(r"[^\w\s.,!?;:'\"()\-—…/%№+=]", re.UNICODE)
+_EN_ALLOWED_RE = re.compile(r"[^\w\s.,!?;:'\"()\-—…/%+=]", re.UNICODE)
+
 
 def replace_urls(text: str) -> str:
     """Replaces only URLs in text with the word "link" for TTS. Labels (e.g., GitHub:) stay intact."""
     return URL_RE.sub(" link ", text)
+
+
+def strip_unsupported_symbols(text: str, lang: str = "ru") -> str:
+    """Removes symbols that commonly break Silero symbol lookup (e.g. '^')."""
+    if lang == "en":
+        return _EN_ALLOWED_RE.sub(" ", text)
+    return _RU_ALLOWED_RE.sub(" ", text)
 
 
 class TextNormalizer:
@@ -33,5 +43,6 @@ class TextNormalizer:
                 t = expand_numbers(t)
         if self.transliterate_latin:
             t = transliterate_latin_to_cyrillic(t)
+        t = strip_unsupported_symbols(t, lang=self.expand_numeric_lang)
         t = " ".join(t.split())
         return t

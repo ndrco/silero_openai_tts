@@ -1,5 +1,5 @@
 """Tests for text normalization (URL → "link", EN numbers, etc.)."""
-from app.text.normalize import TextNormalizer, replace_urls
+from app.text.normalize import TextNormalizer, replace_urls, strip_unsupported_symbols
 from app.text.numbers import expand_numbers_en
 
 
@@ -31,3 +31,14 @@ def test_label_kept_url_replaced():
 def test_expand_numbers_en():
     assert expand_numbers_en("long audio #1.") == "long audio number one."
     assert "two" in expand_numbers_en("We have 2 goals.")
+
+
+def test_strip_unsupported_symbols_removes_caret_for_ru():
+    assert strip_unsupported_symbols("Мой тест ^ 732", lang="ru") == "Мой тест   732"
+
+
+def test_normalizer_removes_unsupported_symbols_for_ru():
+    n = TextNormalizer(transliterate_latin=False, expand_numeric=False, expand_numeric_lang="ru")
+    out = n.run("Мой тест ^ 732")
+    assert "^" not in out
+    assert out == "Мой тест 732"
