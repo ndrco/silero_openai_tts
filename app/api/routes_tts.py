@@ -53,7 +53,16 @@ def _synthesize_with_routing(request: Request, text: str, speaker: str) -> bytes
                 wav_parts.append(ru_engine.synthesize_wav_bytes(normalized_ru, speaker=speaker))
         else:
             normalized = ru_normalizer.run(segment.text)
-            wav_parts.append(ru_engine.synthesize_wav_bytes(normalized, speaker=speaker))
+            if not normalized or not normalized.strip():
+                normalized = " "
+            try:
+                wav_parts.append(ru_engine.synthesize_wav_bytes(normalized, speaker=speaker))
+            except (ValueError, RuntimeError, KeyError) as e:
+                log.warning("RU model rejected segment, sanitizing fallback: %s", e)
+                allowed = '.,!?;:\'"()-/%№+=—…'
+                safe_text = "".join(ch if (ch.isalnum() or ch.isspace() or ch in allowed) else " " for ch in normalized)
+                safe_text = " ".join(safe_text.split()) or " "
+                wav_parts.append(ru_engine.synthesize_wav_bytes(safe_text, speaker=speaker))
 
     pause_sec = getattr(request.app.state.settings, "silero_pause_between_fragments_sec", 0.3)
     return concat_wav_bytes(wav_parts, expected_sample_rate=ru_engine.sample_rate, pause_sec=pause_sec)

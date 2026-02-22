@@ -166,3 +166,19 @@ def test_skip_playback_with_auth(client_with_auth: TestClient) -> None:
     assert response.status_code == 200
     data = response.json()
     assert "skipped" in data
+
+
+def test_speech_with_ru_text_and_invalid_symbol_succeeds(client: TestClient, valid_speech_payload: dict) -> None:
+    """RU text with unsupported symbol does not break synthesis."""
+    payload = {**valid_speech_payload, "input": "Мой тест ^ 732"}
+    response = client.post("/v1/audio/speech", json=payload)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/wav"
+
+
+def test_speech_with_ru_invalid_symbol_succeeds_with_routing(client_with_routing: TestClient, valid_speech_payload: dict) -> None:
+    """In language-aware routing, RU segment with '^' still synthesizes."""
+    payload = {**valid_speech_payload, "input": "Мой тест ^ 732"}
+    response = client_with_routing.post("/v1/audio/speech", json=payload)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/wav"
