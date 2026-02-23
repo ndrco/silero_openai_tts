@@ -13,6 +13,7 @@ from app.audio.cache import DiskCache
 from app.settings import Settings
 from app.text.language_router import LanguageAwareRouter
 from app.text.normalize import TextNormalizer
+from app.services.tts_service import TTSService
 
 
 def _minimal_wav_bytes(sample_rate: int = 48000) -> bytes:
@@ -63,6 +64,14 @@ def create_test_app(*, require_auth: bool = False, cache_dir: str | None = None,
     app.state.en_normalizer = TextNormalizer(transliterate_latin=False, expand_numeric=False) if language_aware_routing else None
     app.state.language_router = LanguageAwareRouter() if language_aware_routing else None
     app.state.cache = DiskCache(settings.cache_dir, max_files=settings.cache_max_files)
+    app.state.tts_service = TTSService(
+        settings=settings,
+        ru_engine=app.state.engine,
+        ru_normalizer=app.state.normalizer,
+        en_engine=app.state.en_engine,
+        en_normalizer=app.state.en_normalizer,
+        language_router=app.state.language_router,
+    )
 
     return app
 

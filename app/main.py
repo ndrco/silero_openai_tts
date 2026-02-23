@@ -7,6 +7,7 @@ from app.text.normalize import TextNormalizer
 from app.text.language_router import LanguageAwareRouter
 from app.audio.cache import DiskCache
 from app.api.routes_tts import router as tts_router
+from app.services.tts_service import TTSService
 from app.audio.player import stop_player
 
 
@@ -73,6 +74,14 @@ def create_app() -> FastAPI:
     app.state.en_normalizer = en_normalizer
     app.state.language_router = lang_router
     app.state.cache = cache
+    app.state.tts_service = TTSService(
+        settings=settings,
+        ru_engine=ru_engine,
+        ru_normalizer=ru_normalizer,
+        en_engine=en_engine,
+        en_normalizer=en_normalizer,
+        language_router=lang_router,
+    )
 
     @app.on_event("shutdown")
     def _shutdown():
