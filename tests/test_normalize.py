@@ -71,3 +71,11 @@ def test_normalizer_keeps_technical_patterns_untouched():
     n = TextNormalizer(transliterate_latin=False, expand_numeric=True, expand_numeric_lang="ru")
     out = n.run("Версия v1.2.3, IP 192.168.0.1, дата 01.02.2025")
     assert out == "Версия v1.2.3, IP 192.168.0.1, дата 01.02.2025"
+
+
+def test_strip_unsupported_symbols_removes_cjk_for_ru():
+    assert strip_unsupported_symbols("Хочешь帮我 скачать", lang="ru") == "Хочешь   скачать"
+
+
+def test_strip_unsupported_symbols_removes_cjk_for_en():
+    assert strip_unsupported_symbols("download 帮我 now", lang="en") == "download   now"
