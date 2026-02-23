@@ -9,8 +9,11 @@ URL_RE = re.compile(
     re.IGNORECASE,
 )
 
-_RU_ALLOWED_RE = re.compile(r"[^\w\s.,!?;:'\"()\-—…/%№+=]", re.UNICODE)
-_EN_ALLOWED_RE = re.compile(r"[^\w\s.,!?;:'\"()\-—…/%+=]", re.UNICODE)
+# Explicitly allow only target-language alphabets (+ digits and common punctuation).
+# Important: avoid using \w here, because in Unicode mode it includes many scripts
+# (e.g., CJK), which then leak into Silero and can cause ValueError in apply_tts.
+_RU_ALLOWED_RE = re.compile(r"[^A-Za-zА-Яа-яЁё0-9\s.,!?;:'\"()\-—…/%№+=]", re.UNICODE)
+_EN_ALLOWED_RE = re.compile(r"[^A-Za-z0-9\s.,!?;:'\"()\-—…/%+=]", re.UNICODE)
 
 
 def replace_urls(text: str) -> str:

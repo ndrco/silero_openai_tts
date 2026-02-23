@@ -80,7 +80,13 @@ class TTSService:
             else:
                 normalized = self.ru_normalizer.run(fragment)
                 normalized = normalized if normalized.strip() else " "
-                wav_parts.append(self.ru_engine.synthesize_wav_bytes(normalized, speaker=speaker))
+                try:
+                    wav_parts.append(self.ru_engine.synthesize_wav_bytes(normalized, speaker=speaker))
+                except (ValueError, RuntimeError, KeyError) as e:
+                    self.log.warning("RU model rejected fragment without routing, sanitizing fallback: %s", e)
+                    safe_text = strip_unsupported_symbols(normalized, lang="ru")
+                    safe_text = " ".join(safe_text.split()) or " "
+                    wav_parts.append(self.ru_engine.synthesize_wav_bytes(safe_text, speaker=speaker))
 
         if not wav_parts:
             wav_parts = [self.ru_engine.synthesize_wav_bytes(" ", speaker=speaker)]

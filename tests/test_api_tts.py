@@ -195,3 +195,27 @@ def test_speech_newline_converted_to_ssml_medium_breaks(client: TestClient, app,
     assert len(calls) == 2
     assert "Первая" in calls[0][0]
     assert "Вторая" in calls[1][0]
+
+
+def test_speech_without_routing_fallback_on_model_value_error(client: TestClient, app, valid_speech_payload: dict) -> None:
+    """Without language-aware routing, ValueError from model is recovered via sanitizing fallback."""
+    original = app.state.engine.synthesize_wav_bytes
+
+    def flaky_synthesize(text: str, speaker: str | None = None) -> bytes:
+        # Simulate model crash on unsupported CJK chars (like in real Silero process_simple_text).
+        if any("一" <= ch <= "鿿" for ch in text):
+            raise ValueError("unsupported symbols")
+        return original(text, speaker)
+
+    app.state.engine.synthesize_wav_bytes = flaky_synthesize
+
+    payload = {**valid_speech_payload, "input": "Хочешь帮我 скачать один из них?"}
+    response = client.post("/v1/audio/speech", json=payload)
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/wav"
+
+    calls = app.state.engine.calls
+    assert len(calls) >= 1
+    # Ensure the successful fallback call no longer contains CJK chars.
+    assert all(not any("一" <= ch <= "鿿" for ch in call_text) for call_text, _ in calls)
