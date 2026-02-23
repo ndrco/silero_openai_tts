@@ -35,7 +35,6 @@ class TextNormalizer:
         t = (text or "").strip()
         if not t:
             return t
-        t = replace_urls(t)
         if self.expand_numeric:
             if self.expand_numeric_lang == "en":
                 t = expand_numbers_en(t)
