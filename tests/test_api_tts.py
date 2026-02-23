@@ -195,3 +195,30 @@ def test_speech_newline_converted_to_ssml_medium_breaks(client: TestClient, app,
     assert len(calls) == 2
     assert "Первая" in calls[0][0]
     assert "Вторая" in calls[1][0]
+
+
+def test_speech_without_routing_ru_reject_falls_back_to_sanitized_text(
+    client: TestClient, app, valid_speech_payload: dict
+) -> None:
+    """Without language-aware routing, RU synthesis fallback is used when model rejects a fragment."""
+    original_synthesize = app.state.engine.synthesize_wav_bytes
+    calls: list[tuple[str, str | None]] = []
+    state = {"raised": False}
+
+    def flaky_synthesize(text: str, speaker: str | None = None) -> bytes:
+        calls.append((text, speaker))
+        if not state["raised"]:
+            state["raised"] = True
+            raise ValueError("mock reject")
+        return original_synthesize(text, speaker)
+
+    app.state.engine.synthesize_wav_bytes = flaky_synthesize
+
+    payload = {**valid_speech_payload, "input": "Мой тест ^ 732"}
+    response = client.post("/v1/audio/speech", json=payload)
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/wav"
+    assert len(calls) == 2
+    assert "^" in calls[0][0]
+    assert "^" not in calls[1][0]
