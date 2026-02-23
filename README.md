@@ -165,7 +165,7 @@ silero-tts --force-play
 silero-tts --show-text
 
 # Run with both options on custom port
-silero-tts --port 8080 --force-play --show-text
+silero-tts --port 8080 --force-play
 ```
 
 On first start the server will download the selected Silero model (via `torch.hub`).
@@ -257,6 +257,7 @@ Add the following to your OpenClaw config (e.g. ~/.openclaw/openclaw.json):
   "tts": {
     "provider": "openai",
     "auto": "always",
+    "mode": "final",
     "openai": { "voice": "alloy" },
     "edge": { "enabled": false }
   }
@@ -265,18 +266,6 @@ Add the following to your OpenClaw config (e.g. ~/.openclaw/openclaw.json):
 
 Result: OpenClaw gets local speech synthesis with lower latency and no external calls.
 
-### Automatic playback (auto-speak)
-
-You can enable automatic playback of generated TTS responses via:
-
-```json
-"messages": {
-  "tts": {
-    "provider": "openai",
-    "auto": "always"
-  }
-}
-```
 ---
 
 ## Configuration
@@ -291,11 +280,11 @@ Configuration is done via environment variables (loaded from `.env`).
 ### Silero model
 
 - `SILERO_LANGUAGE` (default: `ru`) — language code (e.g. `ru`, `en`).
-- `SILERO_MODEL_ID` (default: `v4_ru`) — Silero model ID for the selected language (e.g. `v4_ru`, `v4_en`).
+- `SILERO_MODEL_ID` (default: `v5_1_ru`) — Silero model ID for the selected language (e.g. `v5_ru`, `v4_ru`).
 - `SILERO_SAMPLE_RATE` (default: `48000`) — output sample rate in Hz (typical values: `8000`, `24000`, `48000`).
 - `SILERO_DEVICE` (default: `cpu`) — `cpu` or `cuda`.
 - `SILERO_NUM_THREADS` (default: `0`) — inference threads (`0` = auto).
-- `SILERO_DEFAULT_SPEAKER` (default: `baya`) — speaker used when `voice` is unknown/unmapped.
+- `SILERO_DEFAULT_SPEAKER` (default: `kseniya`) — speaker used when `voice` is unknown/unmapped.
 - `SILERO_MODELS_DIR` (default: `models`) — directory for downloaded models (if your implementation persists them).
 
 ### Authentication
@@ -313,9 +302,9 @@ Configuration is done via environment variables (loaded from `.env`).
 - `FFMPEG_BIN` (default: `ffmpeg`) — path to FFmpeg binary.
 - `FFPLAY_BIN` (default: `ffplay`) — path to FFplay binary (used for auto-play).
 - `AUTO_PLAY` (default: `false`) — if `true`, synthesized audio is automatically played through the server's default audio output device. Requires `ffplay` (included with ffmpeg).
-  - **Queued playback**: Multiple requests are played sequentially without overlapping.
-  - **Skip support**: Use `DELETE /v1/audio/speech/skip` to skip the currently playing audio.
-- `AUTO_PLAY_SHOW_SKIP_WINDOW` (default: `false`) — if `true`, a local Tkinter window with the **Skip** button is shown while server playback is active; the button is hidden when playback finishes.
+
+## Additional options
+- `AUTO_PLAY_SHOW_SKIP_WINDOW` (default: `true`) — if `true`, a local Tkinter window with the **Skip** button is shown while server playback is active; the button is hidden when playback finishes.
 - `FORCE_PLAY` (default: `false`) — force-enable audio playback on the server side (CLI override). When enabled, also prints text to console before synthesis.
 - `SHOW_TEXT` (default: `false`) — print text to console before synthesis (CLI override).
 
