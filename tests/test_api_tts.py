@@ -182,3 +182,16 @@ def test_speech_with_ru_invalid_symbol_succeeds_with_routing(client_with_routing
     response = client_with_routing.post("/v1/audio/speech", json=payload)
     assert response.status_code == 200
     assert response.headers["content-type"] == "audio/wav"
+
+
+def test_speech_newline_converted_to_ssml_medium_breaks(client: TestClient, app, valid_speech_payload: dict) -> None:
+    """Newline in input is treated as SSML medium break and yields separate synth fragments."""
+    payload = {**valid_speech_payload, "input": "Первая строка\nВторая строка"}
+    response = client.post("/v1/audio/speech", json=payload)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/wav"
+
+    calls = app.state.engine.calls
+    assert len(calls) == 2
+    assert "Первая" in calls[0][0]
+    assert "Вторая" in calls[1][0]
