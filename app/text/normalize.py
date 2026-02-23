@@ -11,6 +11,7 @@ URL_RE = re.compile(
 
 _RU_ALLOWED_RE = re.compile(r"[^\w\s.,!?;:'\"()\-—…/%№+=]", re.UNICODE)
 _EN_ALLOWED_RE = re.compile(r"[^\w\s.,!?;:'\"()\-—…/%+=]", re.UNICODE)
+_SSML_BREAK_PLACEHOLDER = "__SSML_BREAK_MEDIUM__"
 
 
 def replace_urls(text: str) -> str:
@@ -35,6 +36,8 @@ class TextNormalizer:
         t = (text or "").strip()
         if not t:
             return t
+        # Preserve line breaks through normalization: they become medium SSML pauses.
+        t = t.replace("\n", f" {_SSML_BREAK_PLACEHOLDER} ")
         t = replace_urls(t)
         if self.expand_numeric:
             if self.expand_numeric_lang == "en":
@@ -45,4 +48,5 @@ class TextNormalizer:
             t = transliterate_latin_to_cyrillic(t)
         t = strip_unsupported_symbols(t, lang=self.expand_numeric_lang)
         t = " ".join(t.split())
+        t = t.replace(_SSML_BREAK_PLACEHOLDER, '<break strength="medium"/>')
         return t

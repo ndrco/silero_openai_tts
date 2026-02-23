@@ -182,3 +182,29 @@ def test_speech_with_ru_invalid_symbol_succeeds_with_routing(client_with_routing
     response = client_with_routing.post("/v1/audio/speech", json=payload)
     assert response.status_code == 200
     assert response.headers["content-type"] == "audio/wav"
+
+
+def test_speech_newline_converted_to_ssml_break_without_routing(
+    client: TestClient, app, valid_speech_payload: dict
+) -> None:
+    """In regular mode, newline in input is converted to SSML medium break before synthesis."""
+    payload = {**valid_speech_payload, "input": "Первая строка\nВторая строка"}
+    response = client.post("/v1/audio/speech", json=payload)
+    assert response.status_code == 200
+
+    ru_calls = app.state.engine.calls
+    assert len(ru_calls) == 1
+    assert ru_calls[0][0] == 'Первая строка <break strength="medium"/> Вторая строка'
+
+
+def test_speech_newline_converted_to_ssml_break_with_routing(
+    client_with_routing: TestClient, app_with_routing, valid_speech_payload: dict
+) -> None:
+    """In language-aware routing, newline in RU segment is converted to SSML medium break."""
+    payload = {**valid_speech_payload, "input": "Привет\nпока"}
+    response = client_with_routing.post("/v1/audio/speech", json=payload)
+    assert response.status_code == 200
+
+    ru_calls = app_with_routing.state.engine.calls
+    assert len(ru_calls) == 1
+    assert ru_calls[0][0] == 'Привет <break strength="medium"/> пока'

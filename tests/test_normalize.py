@@ -72,3 +72,9 @@ def test_normalizer_keeps_technical_patterns_untouched():
     n = TextNormalizer(transliterate_latin=False, expand_numeric=True, expand_numeric_lang="ru")
     out = n.run("Версия v1.2.3, IP 192.168.0.1, дата 01.02.2025")
     assert out == "Версия v1.2.3, IP 192.168.0.1, дата 01.02.2025"
+
+
+def test_normalizer_converts_newline_to_ssml_break():
+    n = TextNormalizer(transliterate_latin=False, expand_numeric=False, expand_numeric_lang="ru")
+    out = n.run("Первая строка\nВторая строка")
+    assert out == 'Первая строка <break strength="medium"/> Вторая строка'
