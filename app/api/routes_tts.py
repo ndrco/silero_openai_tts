@@ -5,6 +5,7 @@ from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import StreamingResponse
 from app.api.schemas import SpeechRequest
 from app.text.normalize import replace_urls
+from app.text.ssml import inject_medium_breaks_for_newlines, split_by_medium_break
 from app.tts.voices import map_voice_to_silero
 from app.audio.concat import concat_wav_bytes
 from app.audio.encode import encode_audio, media_type_for
@@ -68,6 +69,33 @@ def _synthesize_with_routing(request: Request, text: str, speaker: str) -> bytes
     return concat_wav_bytes(wav_parts, expected_sample_rate=ru_engine.sample_rate, pause_sec=pause_sec)
 
 
+def _synthesize_with_newline_ssml_breaks(request: Request, text: str, speaker: str) -> bytes:
+    """Converts '\n' to SSML medium breaks and applies pauses between synthesized fragments."""
+    settings = request.app.state.settings
+    engine = request.app.state.engine
+    normalizer = request.app.state.normalizer
+
+    ssml_text = inject_medium_breaks_for_newlines(text)
+    fragments = split_by_medium_break(ssml_text)
+
+    wav_parts = []
+    for fragment in fragments:
+        if not fragment.strip():
+            continue
+        if settings.language_aware_routing:
+            wav_parts.append(_synthesize_with_routing(request, fragment, speaker))
+        else:
+            normalized = normalizer.run(fragment)
+            normalized = normalized if normalized.strip() else " "
+            wav_parts.append(engine.synthesize_wav_bytes(normalized, speaker=speaker))
+
+    if not wav_parts:
+        wav_parts = [engine.synthesize_wav_bytes(" ", speaker=speaker)]
+
+    # SSML <break strength="medium"/> semantic pause between newline-separated fragments.
+    return concat_wav_bytes(wav_parts, expected_sample_rate=engine.sample_rate, pause_sec=0.4)
+
+
 @router.post("/v1/audio/speech")
 def create_speech(payload: SpeechRequest, request: Request):
     _check_auth(request)
@@ -94,11 +122,7 @@ def create_speech(payload: SpeechRequest, request: Request):
     if cached is not None:
         return StreamingResponse(BytesIO(cached), media_type=media_type_for(out_fmt))
 
-    if settings.language_aware_routing:
-        wav_bytes = _synthesize_with_routing(request, payload.input, silero_speaker)
-    else:
-        normalized = normalizer.run(payload.input)
-        wav_bytes = engine.synthesize_wav_bytes(normalized, speaker=silero_speaker)
+    wav_bytes = _synthesize_with_newline_ssml_breaks(request, payload.input, silero_speaker)
 
     out_bytes = encode_audio(
         wav_bytes=wav_bytes,
