@@ -26,14 +26,15 @@ class Settings(BaseSettings):
 
     ffmpeg_bin: str = "ffmpeg"
     ffplay_bin: str = "ffplay.exe"  # Windows ffplay for WSL2 compatibility
-    auto_play: bool = True  # auto-play audio on the server side
+    auto_play: bool = False  # auto-play audio on the server side
     auto_play_volume: float = 1.0  # auto-play volume (1.0 = 100%)
     auto_play_show_skip_window: bool = True  # show Tkinter "Skip" button window during server playback
+    force_play: bool = False  # force-enable audio playback (CLI override)
+    show_text: bool = False  # print text to console before synthesis (CLI override)
 
     transliterate_latin: bool = True  # Latin → Cyrillic transliteration for pronouncing English words
 
-    language_aware_routing: bool = True
-
+    language_aware_routing: bool = False # route EN text to a separate English model (if true, otherwise all text goes to the Russian model)
     silero_en_enabled: bool = True
     silero_en_language: str = "en"
     silero_en_model_id: str = "v3_en"

@@ -142,6 +142,32 @@ Windows equivalent:
 .\.venv\Scripts\silero-tts.exe
 ```
 
+**CLI options:**
+
+```bash
+silero-tts --help
+```
+
+| Option | Description |
+|--------|-------------|
+| `--host` | Host interface to bind (default: `0.0.0.0`) |
+| `--port` | Port to listen on (default: `8000`) |
+| `--force-play` | Force-enable audio playback on the server side (also enables text output) |
+| `--show-text` | Print text to console before synthesis |
+
+**Examples:**
+
+```bash
+# Run with force-play enabled (plays audio + shows text)
+silero-tts --force-play
+
+# Run with text output only
+silero-tts --show-text
+
+# Run with both options on custom port
+silero-tts --port 8080 --force-play --show-text
+```
+
 On first start the server will download the selected Silero model (via `torch.hub`).
 
 ---
@@ -290,6 +316,8 @@ Configuration is done via environment variables (loaded from `.env`).
   - **Queued playback**: Multiple requests are played sequentially without overlapping.
   - **Skip support**: Use `DELETE /v1/audio/speech/skip` to skip the currently playing audio.
 - `AUTO_PLAY_SHOW_SKIP_WINDOW` (default: `false`) — if `true`, a local Tkinter window with the **Skip** button is shown while server playback is active; the button is hidden when playback finishes.
+- `FORCE_PLAY` (default: `false`) — force-enable audio playback on the server side (CLI override). When enabled, also prints text to console before synthesis.
+- `SHOW_TEXT` (default: `false`) — print text to console before synthesis (CLI override).
 
 ---
 

@@ -77,6 +77,10 @@ def create_speech(payload: SpeechRequest, request: Request):
     normalizer = request.app.state.normalizer
     cache = request.app.state.cache
 
+    # Print text to console if show_text or force_play is enabled
+    if settings.show_text or settings.force_play:
+        log.info("[TTS] Text: %s", payload.input.strip())
+
     silero_speaker = map_voice_to_silero(payload.voice, default=engine.default_speaker)
     out_fmt = payload.response_format or "wav"
 
@@ -106,7 +110,8 @@ def create_speech(payload: SpeechRequest, request: Request):
     cache.put(key, out_bytes)
 
     # Auto-play on the server side (use original WAV for better quality)
-    if settings.auto_play:
+    # force_play overrides auto_play setting
+    if settings.auto_play or settings.force_play:
         # Apply only speed to WAV for playback
         wav_for_play = encode_audio(
             wav_bytes=wav_bytes,
