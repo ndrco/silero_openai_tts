@@ -42,3 +42,33 @@ def test_normalizer_removes_unsupported_symbols_for_ru():
     out = n.run("Мой тест ^ 732")
     assert "^" not in out
     assert out == "Мой тест 732"
+
+
+def test_normalizer_expands_time_for_ru():
+    n = TextNormalizer(transliterate_latin=False, expand_numeric=True, expand_numeric_lang="ru")
+    out = n.run("Сейчас 14:06")
+    assert out == "Сейчас четырнадцать часов шесть минут"
+
+
+def test_normalizer_expands_utc_offset_with_plus():
+    n = TextNormalizer(transliterate_latin=False, expand_numeric=True, expand_numeric_lang="ru")
+    out = n.run("GMT+3 / Москва")
+    assert out == "GMT плюс три / Москва"
+
+
+def test_normalizer_expands_signed_numbers_and_range():
+    n = TextNormalizer(transliterate_latin=False, expand_numeric=True, expand_numeric_lang="ru")
+    out = n.run("Температура -5, диапазон 10-15")
+    assert out == "Температура минус пять, диапазон от десять до пятнадцать"
+
+
+def test_normalizer_expands_decimal_numbers_for_ru():
+    n = TextNormalizer(transliterate_latin=False, expand_numeric=True, expand_numeric_lang="ru")
+    out = n.run("Число 3.14")
+    assert out == "Число три целых четырнадцать сотых"
+
+
+def test_normalizer_keeps_technical_patterns_untouched():
+    n = TextNormalizer(transliterate_latin=False, expand_numeric=True, expand_numeric_lang="ru")
+    out = n.run("Версия v1.2.3, IP 192.168.0.1, дата 01.02.2025")
+    assert out == "Версия v1.2.3, IP 192.168.0.1, дата 01.02.2025"
