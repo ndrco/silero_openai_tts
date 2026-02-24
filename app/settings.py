@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     silero_en_sample_rate: int = 48000
     silero_en_default_speaker: str = "en_21"
 
-    enable_elevenlabs_compat: bool = False
+    enable_elevenlabs_compat: bool = True
     elevenlabs_require_xi_api_key: bool = True
     elevenlabs_voice_map_json: str = ""
 
