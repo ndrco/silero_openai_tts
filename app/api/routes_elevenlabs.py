@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from io import BytesIO
 
 from fastapi import APIRouter, Request
@@ -15,6 +16,7 @@ from app.tts.elevenlabs import (
 )
 
 router = APIRouter()
+log = logging.getLogger("silero")
 
 
 @router.get("/v1/voices")
@@ -52,6 +54,9 @@ def create_speech_elevenlabs(voice_id: str, payload: ElevenLabsSpeechRequest, re
         default_speaker=engine.default_speaker,
         voice_map=voice_map,
     )
+
+    if settings.show_text or settings.force_play:
+        log.info("[ElevenLabs] Text: %s", payload.text.strip())
 
     out_fmt = elevenlabs_output_to_internal_format(payload.output_format)
 
