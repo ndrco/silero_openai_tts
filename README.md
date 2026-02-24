@@ -1,10 +1,11 @@
-# Silero OpenAI-Compatible TTS
+# Silero OpenAI/ElevenLabs-Compatible TTS
 
-A **local**, self-hosted Text-to-Speech (TTS) server that implements the **OpenAI TTS API** (`POST /v1/audio/speech`).
+A **local**, self-hosted Text-to-Speech (TTS) server that implements both the **OpenAI TTS API** (`POST /v1/audio/speech`)
+and an **ElevenLabs-compatible API** (`POST /v1/text-to-speech/{voice_id}`, `GET /v1/voices`, `GET /v1/models`).
 
-The primary goal of this project is to provide a **drop-in, OpenAI API-compatible TTS backend** for
+The primary goal of this project is to provide a **drop-in TTS backend compatible with OpenAI and ElevenLabs-style clients** for
 [OpenClaw](https://github.com/openclaw/openclaw) — so OpenClaw can speak without relying on external cloud services.
-That said, this server works with **any** project that expects an OpenAI-compatible TTS endpoint: just point the
+That said, this server works with **any** project that expects OpenAI-compatible and/or ElevenLabs-compatible TTS endpoints: just point the
 client to this server’s base URL.
 
 Under the hood it uses **Silero TTS** models via `torch.hub` (downloaded on first run), plus a small text

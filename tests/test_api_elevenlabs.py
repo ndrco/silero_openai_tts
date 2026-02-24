@@ -54,6 +54,18 @@ def test_elevenlabs_auth_via_xi_api_key(client_with_elevenlabs_auth: TestClient)
     assert authorized.status_code == 200
 
 
+def test_elevenlabs_show_text_logging(client_with_elevenlabs: TestClient, caplog) -> None:
+    client_with_elevenlabs.app.state.settings.show_text = True
+
+    with caplog.at_level("INFO", logger="silero"):
+        response = client_with_elevenlabs.post(
+            "/v1/text-to-speech/default",
+            json={"text": "Проверка логирования"},
+        )
+
+    assert response.status_code == 200
+    assert "[ElevenLabs] Text: Проверка логирования" in caplog.text
+
 def test_elevenlabs_validation_empty_text(client_with_elevenlabs: TestClient) -> None:
     response = client_with_elevenlabs.post(
         "/v1/text-to-speech/default",
