@@ -23,6 +23,7 @@
 
 - **Совместимость с OpenAI API**: реализует `POST /v1/audio/speech` с привычными полями запроса:
   `model`, `input`, `voice`, `response_format`, `speed`.
+- **Опциональный ElevenLabs-совместимый режим**: может отдавать `POST /v1/text-to-speech/{voice_id}` и `GET /v1/voices` для клиентов с ElevenLabs-style контрактом.
 - **Сделано для OpenClaw**, но работает с любым OpenAI-совместимым клиентом.
 - **Поддержка русского и английского** (автоматическое распознавание).
 - **Естественное чтение чисел**:
@@ -226,6 +227,47 @@ curl -X DELETE http://localhost:8000/v1/audio/speech/skip \
 Если ничего не воспроизводилось, возвращает `{"skipped": false}`.
 
 ---
+
+
+## ElevenLabs-совместимый адаптер (опционально)
+
+Поверх того же Silero backend можно включить дополнительный API-слой в стиле ElevenLabs:
+
+- `GET /v1/voices`
+- `GET /v1/models`
+- `POST /v1/text-to-speech/{voice_id}`
+- `POST /v1/text-to-speech/{voice_id}/stream` (в этой версии — alias для совместимости)
+
+Включение в `.env`:
+
+```bash
+ENABLE_ELEVENLABS_COMPAT=true
+ELEVENLABS_REQUIRE_XI_API_KEY=true
+```
+
+Если `REQUIRE_AUTH=true`, авторизация работает через:
+- `Authorization: Bearer <API_KEY>`
+- `xi-api-key: <API_KEY>` (предпочтительно для ElevenLabs-совместимых клиентов)
+
+Пример запроса:
+
+```bash
+curl http://localhost:8000/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL \
+  -H "xi-api-key: dummy-local-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Пример ElevenLabs-совместимого запроса",
+    "model_id": "eleven_multilingual_v2",
+    "output_format": "mp3_44100_128"
+  }' \
+  --output out.mp3
+```
+
+Маппинг `output_format` в текущей версии:
+- `mp3_*` -> ответ MP3
+- `pcm_*` -> ответ WAV
+
+Переопределить соответствие `voice_id` можно через `ELEVENLABS_VOICE_MAP_JSON` (JSON-объект в env).
 
 ## Интеграция с OpenClaw
 
