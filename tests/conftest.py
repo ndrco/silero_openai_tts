@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.routes_tts import router as tts_router
+from app.api.routes_elevenlabs import router as elevenlabs_router
 from app.audio.cache import DiskCache
 from app.settings import Settings
 from app.text.language_router import LanguageAwareRouter
@@ -42,10 +43,12 @@ class MockSileroEngine:
         return _minimal_wav_bytes(self.sample_rate)
 
 
-def create_test_app(*, require_auth: bool = False, cache_dir: str | None = None, language_aware_routing: bool = False) -> FastAPI:
+def create_test_app(*, require_auth: bool = False, cache_dir: str | None = None, language_aware_routing: bool = False, enable_elevenlabs_compat: bool = False) -> FastAPI:
     """Creates a FastAPI test app with a mock engine."""
     app = FastAPI(title="Silero TTS Test", version="0.1.0")
     app.include_router(tts_router)
+    if enable_elevenlabs_compat:
+        app.include_router(elevenlabs_router)
 
     cache_path = cache_dir or tempfile.mkdtemp(prefix="silero_tts_test_cache_")
     settings = Settings(
@@ -55,6 +58,7 @@ def create_test_app(*, require_auth: bool = False, cache_dir: str | None = None,
         cache_max_files=100,
         ffmpeg_bin="ffmpeg",
         language_aware_routing=language_aware_routing,
+        enable_elevenlabs_compat=enable_elevenlabs_compat,
     )
 
     app.state.settings = settings
@@ -92,6 +96,30 @@ def app_with_auth():
 def app_with_routing():
     """App with language-aware routing."""
     return create_test_app(require_auth=False, language_aware_routing=True)
+
+
+@pytest.fixture
+def app_with_elevenlabs():
+    """App with ElevenLabs-compatible API enabled."""
+    return create_test_app(require_auth=False, enable_elevenlabs_compat=True)
+
+
+@pytest.fixture
+def app_with_elevenlabs_auth():
+    """App with ElevenLabs-compatible API and auth enabled."""
+    return create_test_app(require_auth=True, enable_elevenlabs_compat=True)
+
+
+@pytest.fixture
+def client_with_elevenlabs(app_with_elevenlabs: FastAPI):
+    """HTTP client for app with ElevenLabs-compatible API."""
+    return TestClient(app_with_elevenlabs)
+
+
+@pytest.fixture
+def client_with_elevenlabs_auth(app_with_elevenlabs_auth: FastAPI):
+    """HTTP client for app with ElevenLabs-compatible API + auth."""
+    return TestClient(app_with_elevenlabs_auth)
 
 
 @pytest.fixture

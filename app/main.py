@@ -7,6 +7,7 @@ from app.text.normalize import TextNormalizer
 from app.text.language_router import LanguageAwareRouter
 from app.audio.cache import DiskCache
 from app.api.routes_tts import router as tts_router
+from app.api.routes_elevenlabs import router as elevenlabs_router
 from app.services.tts_service import TTSService
 from app.audio.player import stop_player
 
@@ -99,6 +100,8 @@ def create_app() -> FastAPI:
         en_engine.load()
 
     app.include_router(tts_router)
+    if settings.enable_elevenlabs_compat:
+        app.include_router(elevenlabs_router)
     return app
 
 

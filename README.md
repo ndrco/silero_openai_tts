@@ -22,6 +22,7 @@ The project also implements voice-over autoplay directly on the server. This mod
 
 - **OpenAI API compatible**: implements `POST /v1/audio/speech` with familiar request fields:
   `model`, `input`, `voice`, `response_format`, `speed`.
+- **ElevenLabs-compatible mode (optional)**: can expose `POST /v1/text-to-speech/{voice_id}` and `GET /v1/voices` for clients expecting ElevenLabs-style API.
 - **Designed for OpenClaw**, but works with any OpenAI-compatible client.
 - **Russian + English support** (automatic recognition).
 - **Reads numerals naturally**:
@@ -225,6 +226,47 @@ Response:
 If no audio was playing, returns `{"skipped": false}`.
 
 ---
+
+
+## ElevenLabs-compatible adapter (optional)
+
+You can enable an additional ElevenLabs-style API surface on top of the same Silero backend:
+
+- `GET /v1/voices`
+- `GET /v1/models`
+- `POST /v1/text-to-speech/{voice_id}`
+- `POST /v1/text-to-speech/{voice_id}/stream` (compat alias in this version)
+
+Enable it in `.env`:
+
+```bash
+ENABLE_ELEVENLABS_COMPAT=true
+ELEVENLABS_REQUIRE_XI_API_KEY=true
+```
+
+If `REQUIRE_AUTH=true`, auth works with either:
+- `Authorization: Bearer <API_KEY>`
+- `xi-api-key: <API_KEY>` (recommended for ElevenLabs-compatible clients)
+
+Example request:
+
+```bash
+curl http://localhost:8000/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL \
+  -H "xi-api-key: dummy-local-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Hello from ElevenLabs-compatible endpoint",
+    "model_id": "eleven_multilingual_v2",
+    "output_format": "mp3_44100_128"
+  }' \
+  --output out.mp3
+```
+
+`output_format` mapping in this version:
+- `mp3_*` -> MP3 response
+- `pcm_*` -> WAV response
+
+You can override voice IDs via `ELEVENLABS_VOICE_MAP_JSON` (JSON object in env).
 
 ## OpenClaw integration
 

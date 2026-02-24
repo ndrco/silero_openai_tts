@@ -1,32 +1,22 @@
 import logging
 import hashlib
 from io import BytesIO
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 from app.api.schemas import SpeechRequest
 from app.tts.voices import map_voice_to_silero
 from app.audio.encode import encode_audio, media_type_for
 from app.audio.player import play_audio, skip_playback
+from app.api.auth import check_auth
 
 router = APIRouter()
 log = logging.getLogger("silero")
 
 
-def _check_auth(req: Request):
-    settings = req.app.state.settings
-    if not settings.require_auth:
-        return
-    auth = req.headers.get("authorization", "")
-    if not auth.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing Authorization Bearer token")
-    token = auth.split(" ", 1)[1].strip()
-    if token != settings.api_key:
-        raise HTTPException(status_code=401, detail="Invalid API key")
-
 
 @router.post("/v1/audio/speech")
 def create_speech(payload: SpeechRequest, request: Request):
-    _check_auth(request)
+    check_auth(request)
 
     settings = request.app.state.settings
     engine = request.app.state.engine
@@ -84,6 +74,6 @@ def create_speech(payload: SpeechRequest, request: Request):
 @router.delete("/v1/audio/speech/skip")
 def skip_speech(request: Request):
     """Skip the currently playing audio."""
-    _check_auth(request)
+    check_auth(request)
     skipped = skip_playback()
     return {"skipped": skipped}
