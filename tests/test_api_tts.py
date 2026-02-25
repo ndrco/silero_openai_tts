@@ -222,3 +222,49 @@ def test_speech_without_routing_ru_reject_falls_back_to_sanitized_text(
     assert len(calls) == 2
     assert "^" in calls[0][0]
     assert "^" not in calls[1][0]
+
+
+def test_speech_without_routing_second_fallback_returns_200(
+    client: TestClient, app, valid_speech_payload: dict
+) -> None:
+    """If normalized and sanitized text both fail, service falls back to neutral/silence without 500."""
+    original_synthesize = app.state.engine.synthesize_wav_bytes
+    calls: list[tuple[str, str | None]] = []
+
+    def very_flaky_synthesize(text: str, speaker: str | None = None) -> bytes:
+        calls.append((text, speaker))
+        if len(calls) <= 2:
+            raise ValueError("mock reject")
+        return original_synthesize(text, speaker)
+
+    app.state.engine.synthesize_wav_bytes = very_flaky_synthesize
+
+    payload = {
+        **valid_speech_payload,
+        "input": "С удовольствием расскажу! 🌸 `curl wttr.in/Moscow?format=%l:+%t+%w`",
+    }
+    response = client.post("/v1/audio/speech", json=payload)
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/wav"
+    assert len(calls) >= 3
+    assert "Текст недоступен" in calls[2][0] or calls[2][0] == " "
+
+
+def test_speech_with_complex_markdown_text_succeeds(client: TestClient, valid_speech_payload: dict) -> None:
+    """Complex markdown/code-heavy payload is cleaned and does not produce 500."""
+    payload = {
+        **valid_speech_payload,
+        "input": (
+            "С удовольствием расскажу! 🌸 wttr.in — сервис погоды для терминала!\n\n"
+            "```bash\n"
+            "curl wttr.in/Moscow?format=%l:+%t+%w\n"
+            "curl wttr.in/Мурманск\n"
+            "```\n"
+            "См. `curl wttr.in` и [help](https://wttr.in/:help)."
+        ),
+    }
+    response = client.post("/v1/audio/speech", json=payload)
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/wav"
+    assert len(response.content) > 0
